@@ -135,10 +135,11 @@ export const useTreeStore = create<TreeState>((set) => ({
 
   loadSnapshot: (snapshot) =>
     set(() => {
-      const result = regenerate(snapshot.params, snapshot.blockColors);
+      const params = { ...getDefaultParams(), ...snapshot.params };
+      const result = regenerate(params, snapshot.blockColors);
       return {
         presetId: snapshot.presetId,
-        params: snapshot.params,
+        params,
         blockColors: snapshot.blockColors,
         model: result.model,
         voxels: result.voxels,

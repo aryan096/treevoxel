@@ -101,6 +101,7 @@ export type TreeParams = {
   trunkLean: number;
   clearTrunkHeight: number;
   trunkCurvature: number;
+  trunkNoise: number;
   primaryBranchCount: number;
   branchAngle: number;
   branchAngleVariance: number;

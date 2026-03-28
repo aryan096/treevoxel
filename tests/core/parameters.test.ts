@@ -25,7 +25,7 @@ describe('parameters', () => {
     const defaults = getDefaultParams();
     const requiredKeys: (keyof TreeParams)[] = [
       'height', 'crownWidth', 'crownDepth', 'trunkBaseRadius', 'trunkTaper',
-      'trunkLean', 'clearTrunkHeight', 'trunkCurvature',
+      'trunkLean', 'clearTrunkHeight', 'trunkCurvature', 'trunkNoise',
       'primaryBranchCount', 'branchAngle', 'branchAngleVariance',
       'branchLengthRatio', 'branchOrderDepth', 'branchDensity', 'branchDroop',
       'apicalDominance', 'crownShape', 'crownFullness', 'leafClusterRadius',

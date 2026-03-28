@@ -21,6 +21,20 @@ function vec3Length(v: Vec3): number {
   return Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 }
 
+function sampleTrunkAxisNoise(
+  t: number,
+  amplitude: number,
+  primaryFrequency: number,
+  secondaryFrequency: number,
+  primaryPhase: number,
+  secondaryPhase: number,
+): number {
+  const envelope = Math.sin(t * Math.PI);
+  const primary = Math.sin(t * primaryFrequency * Math.PI * 2 + primaryPhase);
+  const secondary = Math.sin(t * secondaryFrequency * Math.PI * 2 + secondaryPhase) * 0.5;
+  return envelope * amplitude * (primary + secondary);
+}
+
 /**
  * Generate a tree skeleton from parameters.
  *
@@ -37,22 +51,50 @@ export function generateSkeleton(params: TreeParams): SkeletonNode[] {
   const trunkSteps = Math.max(3, Math.round(params.height));
   const leanRad = (params.trunkLean * Math.PI) / 180;
   const leanDir: Vec3 = [Math.sin(leanRad), 0, 0];
+  const curveAngle = rng() * Math.PI * 2;
+  const secondaryCurveAngle = curveAngle + (rng() - 0.5) * 1.4;
+  const noiseAmplitude = params.trunkNoise * Math.max(0.75, params.trunkBaseRadius * 0.6);
+  const noiseFrequencyX = 0.8 + rng() * 1.6;
+  const noiseFrequencyZ = 0.8 + rng() * 1.6;
+  const noiseSecondaryFrequencyX = noiseFrequencyX * (1.6 + rng() * 0.5);
+  const noiseSecondaryFrequencyZ = noiseFrequencyZ * (1.6 + rng() * 0.5);
+  const noisePhaseX = rng() * Math.PI * 2;
+  const noisePhaseZ = rng() * Math.PI * 2;
+  const noiseSecondaryPhaseX = rng() * Math.PI * 2;
+  const noiseSecondaryPhaseZ = rng() * Math.PI * 2;
 
   for (let i = 0; i <= trunkSteps; i++) {
     const t = i / trunkSteps;
     const y = t * params.height;
 
-    // Curvature: sinusoidal lateral offset
+    // Curvature: a smooth global bend with a smaller secondary sweep.
     const curveOffset = params.trunkCurvature * Math.sin(t * Math.PI) * 2;
-    const curveAngle = rng() * Math.PI * 2;
-    const cx = curveOffset * Math.cos(curveAngle) * (i === 0 ? 0 : 1);
-    const cz = curveOffset * Math.sin(curveAngle) * (i === 0 ? 0 : 1);
+    const secondaryCurveOffset = params.trunkCurvature * 0.45 * Math.sin(t * Math.PI * 2 + Math.PI * 0.15);
+    const cx = (curveOffset * Math.cos(curveAngle) + secondaryCurveOffset * Math.cos(secondaryCurveAngle)) * (i === 0 ? 0 : 1);
+    const cz = (curveOffset * Math.sin(curveAngle) + secondaryCurveOffset * Math.sin(secondaryCurveAngle)) * (i === 0 ? 0 : 1);
+
+    const nx = sampleTrunkAxisNoise(
+      t,
+      noiseAmplitude,
+      noiseFrequencyX,
+      noiseSecondaryFrequencyX,
+      noisePhaseX,
+      noiseSecondaryPhaseX,
+    );
+    const nz = sampleTrunkAxisNoise(
+      t,
+      noiseAmplitude,
+      noiseFrequencyZ,
+      noiseSecondaryFrequencyZ,
+      noisePhaseZ,
+      noiseSecondaryPhaseZ,
+    );
 
     // Lean accumulates with height
     const lx = leanDir[0] * t * params.trunkLean * 0.1;
     const lz = leanDir[2] * t * params.trunkLean * 0.1;
 
-    const position: Vec3 = [lx + cx, y, lz + cz];
+    const position: Vec3 = [lx + cx + nx, y, lz + cz + nz];
     const radius = params.trunkBaseRadius * (1 - t * params.trunkTaper);
 
     const direction: Vec3 = i === 0

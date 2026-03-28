@@ -66,6 +66,7 @@ function normalizeParams(value) {
     'trunkLean',
     'clearTrunkHeight',
     'trunkCurvature',
+    'trunkNoise',
     'primaryBranchCount',
     'branchAngle',
     'branchAngleVariance',

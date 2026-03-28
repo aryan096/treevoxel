@@ -65,4 +65,22 @@ describe('generateSkeleton', () => {
     );
     expect(differs).toBe(true);
   });
+
+  it('trunk noise deforms the trunk centerline laterally', () => {
+    const straight = generateSkeleton({ ...params, trunkCurvature: 0, trunkLean: 0, trunkNoise: 0 });
+    const noisy = generateSkeleton({ ...params, trunkCurvature: 0, trunkLean: 0, trunkNoise: 0.8 });
+
+    const straightTrunk = straight.filter((n) => n.role === 'trunk');
+    const noisyTrunk = noisy.filter((n) => n.role === 'trunk');
+
+    const straightMaxOffset = Math.max(
+      ...straightTrunk.map((n) => Math.hypot(n.position[0], n.position[2]))
+    );
+    const noisyMaxOffset = Math.max(
+      ...noisyTrunk.map((n) => Math.hypot(n.position[0], n.position[2]))
+    );
+
+    expect(straightMaxOffset).toBe(0);
+    expect(noisyMaxOffset).toBeGreaterThan(0.25);
+  });
 });

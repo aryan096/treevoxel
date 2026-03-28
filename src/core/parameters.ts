@@ -59,6 +59,13 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     effectDecrease: 'Straighter trunk.',
     min: 0, max: 1.0, step: 0.05, defaultValue: 0.1,
   },
+  {
+    id: 'trunkNoise', label: 'Trunk Noise', group: 'trunk',
+    description: 'Seeded wobble that deforms the trunk axis so it feels less perfectly centered.',
+    effectIncrease: 'More knotted, irregular trunk deformation.',
+    effectDecrease: 'Cleaner, more symmetrical trunk.',
+    min: 0, max: 1.0, step: 0.05, defaultValue: 0.2,
+  },
   // --- Branching ---
   {
     id: 'primaryBranchCount', label: 'Primary Branch Count', group: 'branching',
