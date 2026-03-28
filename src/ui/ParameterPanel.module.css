@@ -52,3 +52,52 @@
   background: #3a3a5a;
   border-radius: 3px;
 }
+
+.categoricalParam {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+
+.categoricalLabel {
+  font-size: 12px;
+  color: #c0c0d0;
+}
+
+.categoricalTrigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: #1e1e30;
+  border: 1px solid #3a3a5a;
+  border-radius: 4px;
+  color: #e0e0e0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.categoricalContent {
+  background: #1e1e30;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  padding: 4px;
+  z-index: 100;
+}
+
+.categoricalItem {
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+  font-size: 12px;
+  color: #e0e0e0;
+  text-transform: capitalize;
+}
+
+.categoricalItem:hover,
+.categoricalItem[data-highlighted] {
+  background: #2a2a4a;
+}

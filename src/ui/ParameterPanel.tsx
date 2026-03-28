@@ -1,5 +1,6 @@
+import * as Select from '@radix-ui/react-select';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
-import { PARAMETER_DEFS } from '../core/parameters';
+import { PARAMETER_DEFS, CATEGORICAL_PARAMS } from '../core/parameters';
 import { useTreeStore } from '../store/treeStore';
 import PresetSelector from './PresetSelector';
 import ParameterGroup from './ParameterGroup';
@@ -34,13 +35,42 @@ export default function ParameterPanel() {
             const groupParams = grouped.get(group);
             if (!groupParams) return null;
             return (
-              <ParameterGroup
-                key={group}
-                group={group}
-                params={groupParams}
-                values={params as unknown as Record<string, number>}
-                onChange={setParam}
-              />
+              <div key={group}>
+                <ParameterGroup
+                  group={group}
+                  params={groupParams}
+                  values={params as unknown as Record<string, number>}
+                  onChange={setParam}
+                />
+                {/* Render categorical params for this group */}
+                {CATEGORICAL_PARAMS
+                  .filter((cp) => cp.group === group)
+                  .map((cp) => (
+                    <div key={cp.id} className={styles.categoricalParam}>
+                      <label className={styles.categoricalLabel}>{cp.label}</label>
+                      <Select.Root
+                        value={params[cp.id] as string}
+                        onValueChange={(v) => setParam(cp.id, v)}
+                      >
+                        <Select.Trigger className={styles.categoricalTrigger}>
+                          <Select.Value />
+                          <Select.Icon>{'\u25bc'}</Select.Icon>
+                        </Select.Trigger>
+                        <Select.Portal>
+                          <Select.Content className={styles.categoricalContent} position="popper" sideOffset={4}>
+                            <Select.Viewport>
+                              {cp.options.map((opt) => (
+                                <Select.Item key={opt} value={opt} className={styles.categoricalItem}>
+                                  <Select.ItemText>{opt}</Select.ItemText>
+                                </Select.Item>
+                              ))}
+                            </Select.Viewport>
+                          </Select.Content>
+                        </Select.Portal>
+                      </Select.Root>
+                    </div>
+                  ))}
+              </div>
             );
           })}
 
