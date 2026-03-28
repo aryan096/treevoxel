@@ -49,8 +49,8 @@ export function generateSkeleton(params: TreeParams): SkeletonNode[] {
 
   // --- Trunk ---
   const trunkSteps = Math.max(3, Math.round(params.height));
-  const leanRad = (params.trunkLean * Math.PI) / 180;
-  const leanDir: Vec3 = [Math.sin(leanRad), 0, 0];
+  const leanDirectionRad = (params.trunkLeanDirection * Math.PI) / 180;
+  const leanDir: Vec3 = [Math.cos(leanDirectionRad), 0, Math.sin(leanDirectionRad)];
   const curveAngle = rng() * Math.PI * 2;
   const secondaryCurveAngle = curveAngle + (rng() - 0.5) * 1.4;
   const noiseAmplitude = params.trunkNoise * Math.max(0.75, params.trunkBaseRadius * 0.6);
@@ -178,6 +178,7 @@ function addBranch(
 
   const parent = nodes[parentIdx];
   const segmentCount = Math.max(1, Math.round(length));
+  const weepingFactor = params.crownShape === 'weeping' ? 1.85 : 1;
 
   let currentIdx = parentIdx;
   let currentDir = direction;
@@ -185,7 +186,7 @@ function addBranch(
   for (let s = 1; s <= segmentCount; s++) {
     const t = s / segmentCount;
 
-    const droopAmount = params.branchDroop * t * 0.3;
+    const droopAmount = params.branchDroop * weepingFactor * t * (0.3 + order * 0.06);
     const droopedDir: Vec3 = vec3Normalize([
       currentDir[0],
       currentDir[1] - droopAmount,
@@ -222,9 +223,10 @@ function addBranch(
       const angle = (params.branchAngle * 0.8 + (rng() - 0.5) * params.branchAngleVariance) * Math.PI / 180;
       const sinA = Math.sin(angle);
       const cosA = Math.cos(angle);
+      const descendantDroop = params.branchDroop * (params.crownShape === 'weeping' ? 0.32 : 0.1);
       const subDir: Vec3 = vec3Normalize([
         currentDir[0] * cosA + sinA * Math.cos(azimuth),
-        currentDir[1] * cosA - params.branchDroop * 0.1,
+        currentDir[1] * cosA - descendantDroop,
         currentDir[2] * cosA + sinA * Math.sin(azimuth),
       ]);
       const subLength = length * 0.5;

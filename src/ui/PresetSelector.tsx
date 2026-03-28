@@ -10,7 +10,7 @@ export default function PresetSelector() {
 
   return (
     <div className={styles.container}>
-      <label className={styles.label}>Species Preset</label>
+      <label className={styles.label}>Tree Preset</label>
       <Select.Root value={presetId} onValueChange={(v) => setPreset(v as PresetId)}>
         <Select.Trigger className={styles.trigger}>
           <Select.Value />

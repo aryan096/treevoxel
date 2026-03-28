@@ -16,7 +16,49 @@ const adminKeys = new Set(
     .filter(Boolean),
 );
 
-const allowedPresets = new Set(['spruce', 'oak', 'willow']);
+const presetBlockColors = {
+  spruce: {
+    log: '#5b3a24',
+    branch: '#6b4a2e',
+    leaf: '#355f36',
+  },
+  oak: {
+    log: '#6e4a2f',
+    branch: '#856331',
+    leaf: '#5f8f41',
+  },
+  willow: {
+    log: '#7a5a3b',
+    branch: '#8f6c44',
+    leaf: '#7ea05a',
+  },
+  'italian-cypress': {
+    log: '#5d3b28',
+    branch: '#674330',
+    leaf: '#2f5b35',
+  },
+  baobab: {
+    log: '#8a6a53',
+    branch: '#9c7c60',
+    leaf: '#7f944f',
+  },
+  'monkey-puzzle': {
+    log: '#4b3427',
+    branch: '#5d4330',
+    leaf: '#4a6b39',
+  },
+  'joshua-tree': {
+    log: '#705840',
+    branch: '#806648',
+    leaf: '#71854d',
+  },
+};
+const defaultBlockColors = {
+  log: '#6b4226',
+  branch: '#8b6914',
+  leaf: '#4d9a45',
+};
+const allowedPresets = new Set(Object.keys(presetBlockColors));
 const allowedCrownShapes = new Set(['conical', 'spherical', 'ovoid', 'columnar', 'vase', 'weeping', 'irregular']);
 const allowedBlockTypes = new Set(['log', 'branch', 'leaf']);
 
@@ -50,6 +92,10 @@ function normalizeHexColor(value, fieldName) {
     throw new Error(`${fieldName} must be a hex color.`);
   }
   return value.toLowerCase();
+}
+
+function getPresetBlockColors(presetId) {
+  return presetBlockColors[presetId] ?? defaultBlockColors;
 }
 
 function normalizeParams(value) {
@@ -107,7 +153,25 @@ function normalizeParams(value) {
   return params;
 }
 
-function normalizeSnapshot(snapshot) {
+function normalizeBlockColors(value, presetId, { allowMissing = false } = {}) {
+  const fallback = getPresetBlockColors(presetId);
+  const raw = value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+
+  if (!raw && !allowMissing) {
+    throw new Error('Submission block colors are invalid.');
+  }
+
+  const blockColors = {};
+  for (const type of allowedBlockTypes) {
+    const color = raw?.[type];
+    blockColors[type] = color == null
+      ? fallback[type]
+      : normalizeHexColor(color, `${type} color`);
+  }
+  return blockColors;
+}
+
+function normalizeSnapshot(snapshot, { allowMissingBlockColors = false } = {}) {
   if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
     throw new Error('Submission snapshot is invalid.');
   }
@@ -116,19 +180,12 @@ function normalizeSnapshot(snapshot) {
     throw new Error('Submission preset is invalid.');
   }
 
-  if (!snapshot.blockColors || typeof snapshot.blockColors !== 'object' || Array.isArray(snapshot.blockColors)) {
-    throw new Error('Submission block colors are invalid.');
-  }
-
-  const blockColors = {};
-  for (const type of allowedBlockTypes) {
-    blockColors[type] = normalizeHexColor(snapshot.blockColors[type], `${type} color`);
-  }
-
   return {
     presetId: snapshot.presetId,
     params: normalizeParams(snapshot.params),
-    blockColors,
+    blockColors: normalizeBlockColors(snapshot.blockColors, snapshot.presetId, {
+      allowMissing: allowMissingBlockColors,
+    }),
   };
 }
 
@@ -189,7 +246,7 @@ function serializeSubmission(submission) {
     status: submission.status,
     createdAt: submission.createdAt,
     reviewedAt: submission.reviewedAt ?? null,
-    snapshot: submission.snapshot,
+    snapshot: normalizeSnapshot(submission.snapshot, { allowMissingBlockColors: true }),
   };
 }
 

@@ -24,13 +24,13 @@ describe('parameters', () => {
   it('getDefaultParams returns all required keys', () => {
     const defaults = getDefaultParams();
     const requiredKeys: (keyof TreeParams)[] = [
+      'randomSeed', 'colorRandomness',
       'height', 'crownWidth', 'crownDepth', 'trunkBaseRadius', 'trunkTaper',
-      'trunkLean', 'clearTrunkHeight', 'trunkCurvature', 'trunkNoise',
+      'trunkLean', 'trunkLeanDirection', 'clearTrunkHeight', 'trunkCurvature', 'trunkNoise',
       'primaryBranchCount', 'branchAngle', 'branchAngleVariance',
       'branchLengthRatio', 'branchOrderDepth', 'branchDensity', 'branchDroop',
       'apicalDominance', 'crownShape', 'crownFullness', 'leafClusterRadius',
-      'leafDensity', 'interiorLeafPruning', 'phototropism', 'windBias', 'age',
-      'randomSeed', 'colorRandomness', 'minBranchThickness', 'leafCleanup', 'symmetryAssist',
+      'leafDensity', 'interiorLeafPruning', 'minBranchThickness', 'leafCleanup', 'symmetryAssist',
       'buildabilityBias',
     ];
     for (const key of requiredKeys) {

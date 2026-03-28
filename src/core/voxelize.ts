@@ -1,5 +1,5 @@
 import type { TreeModel, TreeParams, VoxelStore, BlockType } from './types';
-import { pack, GRID_SIZE } from './pack';
+import { pack, unpack, GRID_SIZE } from './pack';
 import { createRng } from './rng';
 
 /**
@@ -90,6 +90,41 @@ export function voxelize(model: TreeModel, params: TreeParams): VoxelStore {
     }
   }
 
+  // --- Interior pruning: hollow out dense, shaded crown regions ---
+  if (params.interiorLeafPruning > 0) {
+    const toRemove: Array<{ y: number; key: number }> = [];
+
+    for (const [y, layer] of layers) {
+      for (const [key, type] of layer) {
+        if (type !== 'leaf') continue;
+
+        const [x, z] = unpack(key);
+        const leafNeighbors = countLeafNeighbors(layers, x, y, z);
+        const exposedFaces = countExposedFaces(layers, x, y, z);
+
+        // Interior leaves tend to be surrounded by other leaves and have very little exposure.
+        if (leafNeighbors < 14 || exposedFaces > 1) continue;
+
+        const interiorStrength = (leafNeighbors - 13) / 13;
+        const shelteredStrength = (1 - exposedFaces / 6);
+        const pruneChance = params.interiorLeafPruning * 0.85 * interiorStrength * shelteredStrength;
+
+        if (rng() < pruneChance) {
+          toRemove.push({ y, key });
+        }
+      }
+    }
+
+    for (const { y, key } of toRemove) {
+      const layer = layers.get(y);
+      if (!layer) continue;
+      if (layer.get(key) !== 'leaf') continue;
+      layer.delete(key);
+      count--;
+      if (layer.size === 0) layers.delete(y);
+    }
+  }
+
   // --- Cleanup: remove isolated leaf blocks ---
   if (params.leafCleanup > 0) {
     const toRemove: Array<{ y: number; key: number }> = [];
@@ -131,6 +166,48 @@ export function voxelize(model: TreeModel, params: TreeParams): VoxelStore {
   }
 
   return { layers, bounds, count };
+}
+
+function countLeafNeighbors(
+  layers: Map<number, Map<number, BlockType>>,
+  x: number,
+  y: number,
+  z: number,
+): number {
+  let neighbors = 0;
+
+  for (let dy = -1; dy <= 1; dy++) {
+    const layer = layers.get(y + dy);
+    if (!layer) continue;
+
+    for (let dx = -1; dx <= 1; dx++) {
+      for (let dz = -1; dz <= 1; dz++) {
+        if (dx === 0 && dy === 0 && dz === 0) continue;
+        const neighbor = layer.get(pack(x + dx, z + dz));
+        if (neighbor === 'leaf') neighbors++;
+      }
+    }
+  }
+
+  return neighbors;
+}
+
+function countExposedFaces(
+  layers: Map<number, Map<number, BlockType>>,
+  x: number,
+  y: number,
+  z: number,
+): number {
+  let exposed = 0;
+
+  if (!layers.get(y)?.has(pack(x + 1, z))) exposed++;
+  if (!layers.get(y)?.has(pack(x - 1, z))) exposed++;
+  if (!layers.get(y)?.has(pack(x, z + 1))) exposed++;
+  if (!layers.get(y)?.has(pack(x, z - 1))) exposed++;
+  if (!layers.get(y + 1)?.has(pack(x, z))) exposed++;
+  if (!layers.get(y - 1)?.has(pack(x, z))) exposed++;
+
+  return exposed;
 }
 
 function rasterizeSegment(

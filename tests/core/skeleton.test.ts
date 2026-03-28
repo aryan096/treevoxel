@@ -83,4 +83,53 @@ describe('generateSkeleton', () => {
     expect(straightMaxOffset).toBe(0);
     expect(noisyMaxOffset).toBeGreaterThan(0.25);
   });
+
+  it('trunk lean direction rotates the lateral displacement axis', () => {
+    const eastLeaning = generateSkeleton({
+      ...params,
+      trunkCurvature: 0,
+      trunkNoise: 0,
+      trunkLean: 20,
+      trunkLeanDirection: 0,
+    });
+    const northLeaning = generateSkeleton({
+      ...params,
+      trunkCurvature: 0,
+      trunkNoise: 0,
+      trunkLean: 20,
+      trunkLeanDirection: 90,
+    });
+
+    const eastTip = eastLeaning.filter((n) => n.role === 'trunk').at(-1)!;
+    const northTip = northLeaning.filter((n) => n.role === 'trunk').at(-1)!;
+
+    expect(Math.abs(eastTip.position[0])).toBeGreaterThan(0.5);
+    expect(Math.abs(eastTip.position[2])).toBeLessThan(0.0001);
+    expect(Math.abs(northTip.position[2])).toBeGreaterThan(0.5);
+    expect(Math.abs(northTip.position[0])).toBeLessThan(0.0001);
+  });
+
+  it('weeping crown shape drives branches downward more strongly', () => {
+    const base = {
+      ...params,
+      randomSeed: 1234,
+      branchDroop: 0.45,
+      branchOrderDepth: 3,
+      branchDensity: 0.8,
+      branchLengthRatio: 0.9,
+    };
+
+    const upright = generateSkeleton({ ...base, crownShape: 'ovoid' });
+    const weeping = generateSkeleton({ ...base, crownShape: 'weeping' });
+
+    const uprightTips = upright.filter((n) => n.role === 'twig');
+    const weepingTips = weeping.filter((n) => n.role === 'twig');
+
+    const uprightAvgDirectionY =
+      uprightTips.reduce((sum, node) => sum + node.direction[1], 0) / uprightTips.length;
+    const weepingAvgDirectionY =
+      weepingTips.reduce((sum, node) => sum + node.direction[1], 0) / weepingTips.length;
+
+    expect(weepingAvgDirectionY).toBeLessThan(uprightAvgDirectionY);
+  });
 });

@@ -10,7 +10,7 @@ import type {
   TreeSnapshot,
 } from '../core/types';
 import { getDefaultParams } from '../core/parameters';
-import { PRESETS, applyPreset } from '../core/presets';
+import { PRESETS, applyPreset, applyPresetBlockColors } from '../core/presets';
 import { generateTree, type GenerationResult } from '../core/generate';
 import { buildRenderBuffer } from '../core/renderBuffer';
 
@@ -57,13 +57,14 @@ function regenerate(params: TreeParams, blockColors: BlockColors): GenerationRes
 }
 
 const initialParams = applyPreset(getDefaultParams(), PRESETS[0]);
-const initialResult = regenerate(initialParams, DEFAULT_BLOCK_COLORS);
+const initialBlockColors = applyPresetBlockColors(DEFAULT_BLOCK_COLORS, PRESETS[0]);
+const initialResult = regenerate(initialParams, initialBlockColors);
 
 export const useTreeStore = create<TreeState>((set) => ({
   presetId: PRESETS[0].id,
   params: initialParams,
   activeLayerIndex: 0,
-  blockColors: DEFAULT_BLOCK_COLORS,
+  blockColors: initialBlockColors,
   display: {
     showLog: true,
     showBranch: true,
@@ -94,10 +95,12 @@ export const useTreeStore = create<TreeState>((set) => ({
       const preset = PRESETS.find((p) => p.id === id);
       if (!preset) return {};
       const params = applyPreset(getDefaultParams(), preset);
-      const result = regenerate(params, state.blockColors);
+      const blockColors = applyPresetBlockColors(state.blockColors, preset);
+      const result = regenerate(params, blockColors);
       return {
         presetId: id,
         params,
+        blockColors,
         model: result.model,
         voxels: result.voxels,
         buffer: result.buffer,

@@ -4,7 +4,6 @@ import VoxelScene from './render/VoxelScene';
 import ParameterPanel from './ui/ParameterPanel';
 import LayerBrowser from './ui/LayerBrowser';
 import Toolbar from './ui/Toolbar';
-import ExportPanel from './ui/ExportPanel';
 import AboutPanel from './ui/AboutPanel';
 import CommunityPanel from './ui/CommunityPanel';
 import { useTreeStore } from './store/treeStore';
@@ -13,7 +12,7 @@ export default function App() {
   const voxels = useTreeStore((s) => s.voxels);
   const activeLayer = useTreeStore((s) => s.activeLayerIndex);
   const setActiveLayer = useTreeStore((s) => s.setActiveLayer);
-  const [activeTab, setActiveTab] = useState<'settings' | 'layers' | 'community' | 'export' | 'about'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'layers' | 'community' | 'about'>('settings');
 
   useEffect(() => {
     const sortedYs = Array.from(voxels.layers.keys()).sort((a, b) => a - b);
@@ -68,15 +67,6 @@ export default function App() {
           <button
             type="button"
             role="tab"
-            aria-selected={activeTab === 'export'}
-            className={`${styles.tab} ${activeTab === 'export' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('export')}
-          >
-            Export
-          </button>
-          <button
-            type="button"
-            role="tab"
             aria-selected={activeTab === 'about'}
             className={`${styles.tab} ${activeTab === 'about' ? styles.tabActive : ''}`}
             onClick={() => setActiveTab('about')}
@@ -97,10 +87,6 @@ export default function App() {
           ) : activeTab === 'community' ? (
             <div className={styles.communityPanel} role="tabpanel" aria-label="Community">
               <CommunityPanel />
-            </div>
-          ) : activeTab === 'export' ? (
-            <div className={styles.exportPanel} role="tabpanel" aria-label="Export">
-              <ExportPanel />
             </div>
           ) : (
             <div className={styles.aboutPanel} role="tabpanel" aria-label="About">

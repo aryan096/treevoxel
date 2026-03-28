@@ -93,12 +93,15 @@ export type CategoricalParameterDef = {
 };
 
 export type TreeParams = {
+  randomSeed: number;
+  colorRandomness: number;
   height: number;
   crownWidth: number;
   crownDepth: number;
   trunkBaseRadius: number;
   trunkTaper: number;
   trunkLean: number;
+  trunkLeanDirection: number;
   clearTrunkHeight: number;
   trunkCurvature: number;
   trunkNoise: number;
@@ -115,11 +118,6 @@ export type TreeParams = {
   leafClusterRadius: number;
   leafDensity: number;
   interiorLeafPruning: number;
-  phototropism: number;
-  windBias: number;
-  age: number;
-  randomSeed: number;
-  colorRandomness: number;
   minBranchThickness: number;
   leafCleanup: number;
   symmetryAssist: number;
@@ -127,7 +125,14 @@ export type TreeParams = {
 };
 
 // --- Presets ---
-export type PresetId = 'spruce' | 'oak' | 'willow';
+export type PresetId =
+  | 'spruce'
+  | 'oak'
+  | 'willow'
+  | 'italian-cypress'
+  | 'baobab'
+  | 'monkey-puzzle'
+  | 'joshua-tree';
 
 export type Preset = {
   id: PresetId;
@@ -135,4 +140,5 @@ export type Preset = {
   description: string;
   growthForm: string;
   params: Partial<TreeParams>;
+  blockColors: BlockColors;
 };

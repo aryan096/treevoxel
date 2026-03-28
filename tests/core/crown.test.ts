@@ -24,6 +24,20 @@ describe('isInsideCrown', () => {
     expect(isInsideCrown(6, 11, 0, 'conical', bottom, top, r)).toBe(true);
     expect(isInsideCrown(6, 19, 0, 'conical', bottom, top, r)).toBe(false);
   });
+
+  it('irregular crown varies by direction at the same height', () => {
+    const bottom = 10;
+    const top = 20;
+    const r = 8;
+    const y = 15;
+
+    const eastReach = findDirectionalReach((radius) => [radius, y, 0], bottom, top, r);
+    const westReach = findDirectionalReach((radius) => [-radius, y, 0], bottom, top, r);
+    const northReach = findDirectionalReach((radius) => [0, y, radius], bottom, top, r);
+    const southReach = findDirectionalReach((radius) => [0, y, -radius], bottom, top, r);
+
+    expect(new Set([eastReach, westReach, northReach, southReach]).size).toBeGreaterThan(1);
+  });
 });
 
 describe('generateLeafClusters', () => {
@@ -51,4 +65,40 @@ describe('generateLeafClusters', () => {
     const b = generateLeafClusters(skeleton, params);
     expect(a.length).toBe(b.length);
   });
+
+  it('weeping crown hangs leaf clusters lower than an ovoid crown', () => {
+    const base = {
+      ...params,
+      randomSeed: 321,
+      branchDroop: 0.5,
+      branchOrderDepth: 3,
+      leafDensity: 1,
+    };
+
+    const ovoidSkeleton = generateSkeleton({ ...base, crownShape: 'ovoid' });
+    const weepingSkeleton = generateSkeleton({ ...base, crownShape: 'weeping' });
+    const ovoidClusters = generateLeafClusters(ovoidSkeleton, { ...base, crownShape: 'ovoid' });
+    const weepingClusters = generateLeafClusters(weepingSkeleton, { ...base, crownShape: 'weeping' });
+
+    const ovoidAverageY = ovoidClusters.reduce((sum, cluster) => sum + cluster.center[1], 0) / ovoidClusters.length;
+    const weepingAverageY = weepingClusters.reduce((sum, cluster) => sum + cluster.center[1], 0) / weepingClusters.length;
+
+    expect(weepingAverageY).toBeLessThan(ovoidAverageY);
+  });
 });
+
+function findDirectionalReach(
+  pointAtRadius: (radius: number) => [number, number, number],
+  crownBottomY: number,
+  crownTopY: number,
+  crownRadius: number,
+): number {
+  let lastInside = 0;
+  for (let radius = 0; radius <= crownRadius * 1.5; radius += 0.1) {
+    const [x, y, z] = pointAtRadius(radius);
+    if (isInsideCrown(x, y, z, 'irregular', crownBottomY, crownTopY, crownRadius)) {
+      lastInside = Number(radius.toFixed(1));
+    }
+  }
+  return lastInside;
+}

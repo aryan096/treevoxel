@@ -1,6 +1,20 @@
 import type { ParameterDef, CategoricalParameterDef, TreeParams } from './types';
 
 export const PARAMETER_DEFS: ParameterDef[] = [
+  {
+    id: 'randomSeed', label: 'Random Seed', group: 'environment',
+    description: 'Seed for deterministic random variation. Same seed = same tree.',
+    effectIncrease: 'Different random variation.',
+    effectDecrease: 'Different random variation.',
+    min: 0, max: 99999, step: 1, defaultValue: 42,
+  },
+  {
+    id: 'colorRandomness', label: 'Color Randomness', group: 'environment',
+    description: 'How much per-block color variation is applied to logs, branches, and leaves.',
+    effectIncrease: 'More mottled, varied block colors.',
+    effectDecrease: 'Flatter, more uniform block colors.',
+    min: 0, max: 2, step: 0.05, defaultValue: 1,
+  },
   // --- Global Dimensions ---
   {
     id: 'height', label: 'Height', group: 'dimensions',
@@ -44,6 +58,13 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     effectIncrease: 'Tree leans more to one side.',
     effectDecrease: 'Tree grows more upright.',
     min: 0, max: 30, step: 1, defaultValue: 0,
+  },
+  {
+    id: 'trunkLeanDirection', label: 'Trunk Lean Direction', group: 'trunk',
+    description: 'Compass-like direction of the trunk lean around the vertical axis in degrees.',
+    effectIncrease: 'Lean rotates clockwise around the tree.',
+    effectDecrease: 'Lean rotates counterclockwise around the tree.',
+    min: 0, max: 360, step: 5, defaultValue: 0,
   },
   {
     id: 'clearTrunkHeight', label: 'Clear Trunk Height', group: 'trunk',
@@ -151,42 +172,6 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     effectIncrease: 'Open crown shell, hollow interior.',
     effectDecrease: 'Dense canopy throughout.',
     min: 0, max: 1.0, step: 0.05, defaultValue: 0.3,
-  },
-  // --- Environment ---
-  {
-    id: 'phototropism', label: 'Phototropism', group: 'environment',
-    description: 'Tendency to grow upward toward light.',
-    effectIncrease: 'Stronger upward growth bias.',
-    effectDecrease: 'More lateral, spreading growth.',
-    min: 0, max: 1.0, step: 0.05, defaultValue: 0.5,
-  },
-  {
-    id: 'windBias', label: 'Wind Bias', group: 'environment',
-    description: 'Asymmetric bend as if shaped by prevailing wind.',
-    effectIncrease: 'Stronger wind-shaped asymmetry.',
-    effectDecrease: 'Symmetric, sheltered growth.',
-    min: 0, max: 1.0, step: 0.05, defaultValue: 0,
-  },
-  {
-    id: 'age', label: 'Age', group: 'environment',
-    description: 'Growth stage bias (0 = young sapling, 1 = old growth).',
-    effectIncrease: 'More mature, complex structure.',
-    effectDecrease: 'Younger, simpler form.',
-    min: 0, max: 1.0, step: 0.05, defaultValue: 0.5,
-  },
-  {
-    id: 'randomSeed', label: 'Random Seed', group: 'environment',
-    description: 'Seed for deterministic random variation. Same seed = same tree.',
-    effectIncrease: 'Different random variation.',
-    effectDecrease: 'Different random variation.',
-    min: 0, max: 99999, step: 1, defaultValue: 42,
-  },
-  {
-    id: 'colorRandomness', label: 'Color Randomness', group: 'environment',
-    description: 'How much per-block color variation is applied to logs, branches, and leaves.',
-    effectIncrease: 'More mottled, varied block colors.',
-    effectDecrease: 'Flatter, more uniform block colors.',
-    min: 0, max: 2, step: 0.05, defaultValue: 1,
   },
   // --- Minecraft Readability ---
   {

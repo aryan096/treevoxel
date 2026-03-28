@@ -1,10 +1,34 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { listApprovedCreations, listReviewQueue, reviewCreation, submitCreation, type CommunityCreation } from '../community/api';
+import type { BlockType } from '../core/types';
 import { useTreeStore } from '../store/treeStore';
 import styles from './CommunityPanel.module.css';
 
 function formatDate(value: string): string {
   return new Date(value).toLocaleString();
+}
+
+const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
+  log: 'Log',
+  branch: 'Branch',
+  leaf: 'Leaf',
+};
+
+function PalettePreview({ colors }: { colors: Record<BlockType, string> }) {
+  return (
+    <div className={styles.palette}>
+      {(Object.keys(BLOCK_TYPE_LABELS) as BlockType[]).map((type) => (
+        <div key={type} className={styles.paletteItem}>
+          <span
+            className={styles.paletteSwatch}
+            style={{ backgroundColor: colors[type] }}
+            aria-hidden="true"
+          />
+          <span>{BLOCK_TYPE_LABELS[type]} {colors[type].toUpperCase()}</span>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function CommunityPanel() {
@@ -214,8 +238,9 @@ export default function CommunityPanel() {
                   <span>Preset: {selectedCreation.snapshot.presetId}</span>
                   <span>Seed: {selectedCreation.snapshot.params.randomSeed}</span>
                   <span>Height: {selectedCreation.snapshot.params.height}</span>
-                  <span>Blocks colors saved: 3</span>
+                  <span>Block colors saved: 3</span>
                 </div>
+                <PalettePreview colors={selectedCreation.snapshot.blockColors} />
               </>
             ) : (
               <p className={styles.empty}>Pick a creation to preview it here.</p>
@@ -266,6 +291,7 @@ export default function CommunityPanel() {
                 <span>Seed: {creation.snapshot.params.randomSeed}</span>
                 <span>Height: {creation.snapshot.params.height}</span>
               </div>
+              <PalettePreview colors={creation.snapshot.blockColors} />
               <div className={styles.reviewActions}>
                 <button type="button" className={styles.primaryButton} onClick={() => void handleReview(creation.id, 'approve')}>
                   Approve

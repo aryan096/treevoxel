@@ -1,18 +1,31 @@
 import * as Select from '@radix-ui/react-select';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
-import type { BlockType } from '../core/types';
+import type { BlockType, ParameterDef } from '../core/types';
 import { PARAMETER_DEFS, CATEGORICAL_PARAMS } from '../core/parameters';
+import { exportJSON, exportTextGuide } from '../core/export';
 import { useTreeStore } from '../store/treeStore';
 import PresetSelector from './PresetSelector';
 import ParameterGroup from './ParameterGroup';
+import ParameterSlider from './ParameterSlider';
 import styles from './ParameterPanel.module.css';
 
-const GROUP_ORDER = ['dimensions', 'trunk', 'branching', 'crown', 'environment', 'minecraft'];
+const GROUP_ORDER = ['dimensions', 'trunk', 'branching', 'crown', 'environment'];
+const FEATURED_PARAM_IDS = ['randomSeed', 'colorRandomness'] as const;
 const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   log: 'Log',
   branch: 'Branch',
   leaf: 'Leaf',
 };
+
+function downloadFile(content: string, filename: string, mime: string): void {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(url);
+}
 
 export default function ParameterPanel() {
   const params = useTreeStore((s) => s.params);
@@ -28,11 +41,33 @@ export default function ParameterPanel() {
     list.push(p);
     grouped.set(p.group, list);
   }
+  const featuredParams: ParameterDef[] = FEATURED_PARAM_IDS
+    .map((id) => PARAMETER_DEFS.find((p) => p.id === id))
+    .filter((param): param is ParameterDef => Boolean(param));
+
+  const handleExportJSON = () => {
+    downloadFile(exportJSON(voxels, params), 'treevoxel-export.json', 'application/json');
+  };
+
+  const handleExportText = () => {
+    downloadFile(exportTextGuide(voxels), 'treevoxel-build-guide.txt', 'text/plain');
+  };
 
   return (
     <ScrollArea.Root className={styles.root}>
       <ScrollArea.Viewport className={styles.viewport}>
         <div className={styles.inner}>
+          <section className={styles.featuredSection}>
+            {featuredParams.map((param) => (
+              <ParameterSlider
+                key={param.id}
+                param={param}
+                value={(params as unknown as Record<string, number>)[param.id] ?? param.defaultValue}
+                onChange={(value) => setParam(param.id, value)}
+              />
+            ))}
+          </section>
+
           <PresetSelector />
 
           <button className={styles.seedButton} onClick={randomizeSeed}>
@@ -64,8 +99,11 @@ export default function ParameterPanel() {
           </section>
 
           {GROUP_ORDER.map((group) => {
-            const groupParams = grouped.get(group);
+            const groupParams = (grouped.get(group) || []).filter(
+              (param) => !FEATURED_PARAM_IDS.includes(param.id as (typeof FEATURED_PARAM_IDS)[number]),
+            );
             if (!groupParams) return null;
+            if (groupParams.length === 0) return null;
             return (
               <div key={group}>
                 <ParameterGroup
@@ -110,6 +148,18 @@ export default function ParameterPanel() {
             <span>Blocks: {voxels.count}</span>
             <span>Layers: {voxels.layers.size}</span>
           </div>
+
+          <section className={styles.exportSection}>
+            <span className={styles.exportTitle}>Export</span>
+            <div className={styles.exportButtons}>
+              <button type="button" className={styles.exportButton} onClick={handleExportJSON}>
+                JSON
+              </button>
+              <button type="button" className={styles.exportButton} onClick={handleExportText}>
+                Build Guide
+              </button>
+            </div>
+          </section>
         </div>
       </ScrollArea.Viewport>
       <ScrollArea.Scrollbar className={styles.scrollbar} orientation="vertical">

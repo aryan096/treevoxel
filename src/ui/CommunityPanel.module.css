@@ -180,6 +180,32 @@
   font-size: 11px;
 }
 
+.palette {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.paletteItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(16, 24, 38, 0.92);
+  border: 1px solid rgba(124, 157, 203, 0.14);
+  color: #d9e2f8;
+  font-size: 11px;
+}
+
+.paletteSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 0 0 1px rgba(8, 12, 20, 0.42);
+}
+
 .reviewCard {
   display: flex;
   flex-direction: column;

@@ -18,6 +18,7 @@ export function isInsideCrown(
 
   const t = (y - crownBottomY) / crownHeight;
   const lateralDist = Math.sqrt(x * x + z * z);
+  const angle = Math.atan2(z, x);
 
   let allowedRadius: number;
 
@@ -39,10 +40,28 @@ export function isInsideCrown(
     case 'vase':
       allowedRadius = crownRadius * (0.3 + 0.7 * t);
       break;
-    case 'weeping':
-      allowedRadius = crownRadius * (0.5 + 0.5 * Math.sin(t * Math.PI));
+    case 'weeping': {
+      const upperCanopy = 0.35 + 0.8 * Math.sin(Math.min(1, t * 1.05) * Math.PI * 0.92);
+      const hangingCurtain = Math.max(0, 1 - Math.abs(t - 0.38) / 0.38) * 0.22;
+      allowedRadius = crownRadius * Math.max(0.22, upperCanopy + hangingCurtain);
       break;
-    case 'irregular':
+    }
+    case 'irregular': {
+      const baseRadius = crownRadius * Math.sqrt(Math.max(0, 1.05 - (t * 2 - 1) * (t * 2 - 1)));
+      const primaryLobes = Math.sin(angle * 2.3 + t * Math.PI * 1.4) * 0.18;
+      const secondaryLobes = Math.sin(angle * 4.9 - t * Math.PI * 2.2) * 0.1;
+      const angularNoise = hash01(
+        Math.round((angle + Math.PI) * 1000),
+        Math.round(t * 1000),
+        Math.round(crownRadius * 100),
+      );
+      const randomLobe = (angularNoise - 0.5) * 0.16;
+      const asymmetryX = x >= 0 ? 0.08 : -0.05;
+      const asymmetryZ = z >= 0 ? -0.03 : 0.06;
+      const distortion = 1 + primaryLobes + secondaryLobes + randomLobe + asymmetryX + asymmetryZ;
+      allowedRadius = baseRadius * Math.max(0.45, distortion);
+      break;
+    }
     default:
       allowedRadius = crownRadius * Math.sqrt(Math.max(0, 1.1 - (t * 2 - 1) * (t * 2 - 1)));
       break;
@@ -87,9 +106,15 @@ export function generateLeafClusters(
 
     if (rng() > params.leafDensity) continue;
 
+    const clusterRadius = params.leafClusterRadius * (0.7 + rng() * 0.6);
+    const weepingSag =
+      params.crownShape === 'weeping'
+        ? clusterRadius * (0.35 + rng() * 0.45) * (0.55 + params.branchDroop * 0.9)
+        : 0;
+
     clusters.push({
-      center: [x, y, z],
-      radius: params.leafClusterRadius * (0.7 + rng() * 0.6),
+      center: [x, y - weepingSag, z],
+      radius: clusterRadius,
       density: params.crownFullness,
     });
   }
@@ -108,4 +133,10 @@ export function generateLeafClusters(
   }
 
   return clusters;
+}
+
+function hash01(a: number, b: number, c: number): number {
+  const seed = a * 374761393 + b * 668265263 + c * 2147483647;
+  const hashed = Math.imul(seed ^ (seed >>> 13), 1274126177);
+  return ((hashed ^ (hashed >>> 16)) >>> 0) / 4294967295;
 }

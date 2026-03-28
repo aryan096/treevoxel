@@ -34,7 +34,7 @@
 
 .tabBar {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
   padding: 10px 10px 8px;
   border-bottom: 1px solid rgba(124, 157, 203, 0.16);
@@ -78,7 +78,6 @@
 .settingsPanel,
 .layersPanel,
 .communityPanel,
-.exportPanel,
 .aboutPanel {
   height: 100%;
   min-height: 0;
@@ -89,7 +88,6 @@
   flex-direction: column;
 }
 
-.exportPanel,
 .communityPanel,
 .aboutPanel {
   padding: 12px 14px 14px;

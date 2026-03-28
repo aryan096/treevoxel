@@ -9,7 +9,6 @@ const GROUP_LABELS: Record<string, string> = {
   branching: 'Branching',
   crown: 'Crown & Canopy',
   environment: 'Environment',
-  minecraft: 'Minecraft Readability',
 };
 
 type Props = {

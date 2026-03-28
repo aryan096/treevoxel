@@ -52,4 +52,36 @@ describe('voxelize', () => {
     }
     expect(store.count).toBe(actualCount);
   });
+
+  it('interior leaf pruning removes sheltered canopy leaves', () => {
+    const denseParams = {
+      ...params,
+      randomSeed: 4242,
+      crownFullness: 1,
+      leafDensity: 1,
+      leafClusterRadius: 3.5,
+      interiorLeafPruning: 0,
+      leafCleanup: 0,
+    };
+    const denseSkeleton = generateSkeleton(denseParams);
+    const denseClusters = generateLeafClusters(denseSkeleton, denseParams);
+
+    const unpruned = voxelize({ nodes: denseSkeleton, leafClusters: denseClusters }, denseParams);
+    const pruned = voxelize(
+      { nodes: denseSkeleton, leafClusters: denseClusters },
+      { ...denseParams, interiorLeafPruning: 1 },
+    );
+
+    expect(countLeafBlocks(pruned)).toBeLessThan(countLeafBlocks(unpruned));
+  });
 });
+
+function countLeafBlocks(store: VoxelStore): number {
+  let leafCount = 0;
+  for (const layer of store.layers.values()) {
+    for (const type of layer.values()) {
+      if (type === 'leaf') leafCount++;
+    }
+  }
+  return leafCount;
+}
