@@ -23,7 +23,7 @@ The project is no longer centered on image-to-3D reconstruction. The main proble
 The most practical first version is:
 
 - frontend: `TypeScript + Vite + React + @react-three/fiber + three.js`
-- UI/state: `zustand` plus a custom parameter inspector, with `leva` used only if it accelerates prototyping
+- UI/state: `zustand` plus a custom parameter inspector
 - generation model: parameter-driven procedural skeleton plus voxelization
 - presets: species families and growth forms grounded in plant architecture and allometry
 - rendering: `InstancedMesh` cubes for the 3D viewport
@@ -123,7 +123,8 @@ Suggested stack:
 - `@react-three/fiber`
 - `@react-three/drei`
 - `zustand`
-- lightweight CSS system or component primitives, rather than a heavy design framework
+- `@radix-ui/react-*` primitives for interactive components (Slider, Tooltip, ScrollArea, Select)
+- CSS Modules for all visual styling — no design system imposed, full control over appearance
 
 Important performance notes:
 
@@ -144,18 +145,38 @@ Important performance notes:
 
 ### A. Sparse voxel set
 
-Store only occupied cells.
+Store only occupied cells using a Y-bucketed sparse map:
 
-Recommended shape:
+```ts
+// v1 palette — block subtypes (oak log, spruce log, etc.) deferred to v2
+type BlockType = 'log' | 'branch' | 'leaf';
 
-- chunked sparse coordinates
-- explicit block types such as `log`, `leaf`, and optional markers
+type VoxelStore = {
+  layers: Map<number, Map<number, BlockType>>; // y → pack(x,z) → BlockType
+  bounds: { minX: number; maxX: number; minY: number; maxY: number; minZ: number; maxZ: number };
+  count: number;
+};
+
+// pack(x, z) = x * GRID_SIZE + z  (integer arithmetic, no strings)
+```
+
+The render buffer is a derived artifact, rebuilt after each generation:
+
+```ts
+type RenderBuffer = {
+  matrices: Float32Array; // InstancedMesh transform matrices
+  types: Uint8Array;      // block type per instance
+  count: number;
+};
+```
 
 Why:
 
-- trees are sparse structures
-- the layer view can cheaply query one height band at a time
-- export to Minecraft-like formats remains straightforward
+- O(1) layer query — `layers.get(y)` returns the full 2D slice, which is the hot path for the layer view
+- O(1) block lookup — needed during generation for self-shading and artifact cleanup
+- no string key allocation or hashing overhead
+- export iterates per-layer trivially
+- keeping the render buffer separate means the store stays mutable and query-friendly while the renderer gets a flat typed array
 
 ### B. Skeleton plus derived voxels
 
@@ -193,7 +214,7 @@ Suggested preset and parameter fields:
 - leaf cluster size
 - leaf density
 - pruning or self-shading strength
-- randomness seed
+- `randomSeed`
 
 Why this representation matters:
 
@@ -349,10 +370,10 @@ Why it fits:
 - parameters are visually meaningful
 - works well as a second-stage branch refinement method
 
-Best role in v1 or v2:
+Role in v2:
 
-- use a rule-based scaffold for the trunk and major limbs
-- optionally use space colonization to populate secondary branching inside the envelope
+- use a rule-based scaffold for the trunk and major limbs (v1)
+- use space colonization to populate secondary branching inside the crown envelope (v2)
 
 ### C. L-systems
 
@@ -364,7 +385,7 @@ Start with a hybrid:
 
 - deterministic scaffold from interpretable morphology rules
 - controlled randomness for variation
-- optional space-colonization pass for finer structure
+- space-colonization pass for finer structure (v2)
 - voxelization and cleanup tuned for buildability
 
 ## 9. Rendering And View Synchronization
@@ -383,12 +404,14 @@ This is the correct starting point because it matches the final artifact and kee
 
 The layer view should not be an afterthought.
 
-Implementation ideas:
+Implementation:
 
-- compute a `Map<y, 2D occupancy grid>` from the same voxel output
-- render a single selected layer plus optional ghosted adjacent layers
-- allow keyboard stepping and slider scrubbing
-- highlight the selected layer in the 3D viewport
+- derive `layers` directly from `VoxelStore` — no separate computation needed
+- render the active layer as a CSS Grid of `<div>` elements, one cell per occupied block
+- ghosted adjacent layers rendered at reduced opacity behind the active layer
+- keyboard stepping (arrow keys) and slider scrubbing via Radix Slider
+- highlight the active layer in the 3D viewport as a translucent plane
+- fall back to Canvas 2D if DOM cost becomes an issue at larger tree sizes
 
 ### Synchronization requirement
 
@@ -464,6 +487,8 @@ They can remain in a backlog section, but they should not affect the initial arc
 - `@react-three/fiber`
 - `@react-three/drei`
 - `zustand`
+- `@radix-ui/react-*` (Slider, Tooltip, ScrollArea, Select)
+- CSS Modules
 
 ### Core modules
 
@@ -474,14 +499,17 @@ They can remain in a backlog section, but they should not affect the initial arc
 - `src/core/treeModel.ts`
   - skeleton and canopy data structures
 - `src/core/generators/`
-  - scaffold generator
-  - optional space colonization refinement
+  - scaffold generator (v1)
+  - space colonization refinement (v2)
 - `src/core/voxelize.ts`
   - model to voxel blocks
 - `src/core/layers.ts`
-  - voxel blocks to per-height 2D layers
+  - layer rendering helpers: grid bounds, cell coordinate mapping for CSS Grid
+  - note: per-height layer data lives directly in `VoxelStore.layers`, not derived here
 - `src/core/export.ts`
-  - JSON or Minecraft-oriented export formats
+  - JSON block coordinate export
+  - per-layer human-readable text guide
+  - Litematica/NBT schematic export deferred to v2
 - `src/render/`
   - 3D instanced voxel renderer
 - `src/ui/`
@@ -489,15 +517,23 @@ They can remain in a backlog section, but they should not affect the initial arc
 
 ### State shape
 
-At minimum:
+Zustand stores only source-of-truth state:
 
 - active preset id
 - parameter values
-- generation seed
-- derived tree model
-- derived voxel set
+- `randomSeed`
 - active layer index
-- viewport display toggles
+- viewport display toggles (trunk, branches, leaves, grid, axis)
+
+Derived state is computed reactively, never stored:
+
+- `treeModel` — derived from parameter values + seed via pure function
+- `voxelStore` — derived from `treeModel`
+- `renderBuffer` — derived from `voxelStore`, passed directly to `InstancedMesh`
+
+Generation pipeline: `params + seed → treeModel → voxelStore → renderBuffer`
+
+This ensures derived state is never stale and the generation pipeline remains a set of pure, testable functions.
 
 ## 13. Hard Problems To Expect
 
@@ -521,7 +557,7 @@ The product should bias toward legibility, then add realism where it does not da
 If implementation started immediately, the first vertical slice should be:
 
 1. React + R3F app with orbit controls and an instanced cube renderer.
-2. Sparse voxel storage with `log` and `leaf` block types.
+2. Sparse voxel storage with `log`, `branch`, and `leaf` block types.
 3. A rule-based tree generator with one editable archetype.
 4. A parameter panel with explanations for:
    - height
@@ -533,13 +569,16 @@ If implementation started immediately, the first vertical slice should be:
    - crown shape
    - leaf density
    - branch droop
-   - randomness seed
+   - `randomSeed`
 5. A layer viewer with a vertical slider for `y` level selection.
 6. Three starter presets:
    - spruce-like excurrent
    - oak-like rounded broadleaf
    - willow-like drooping crown
-7. Export of block coordinates and layer data.
+7. Export in two formats:
+   - JSON: full block coordinate list `{ blocks: [{x, y, z, type}], layers: {...}, meta: {...} }`
+   - Per-layer text guide: human-readable build instructions per Y level
+   - Litematica/NBT schematic export deferred to v2
 
 This is enough to validate the core thesis:
 
