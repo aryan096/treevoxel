@@ -1,0 +1,110 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 12px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e0e0e0;
+}
+
+.layerInfo {
+  font-size: 11px;
+  color: #888;
+  font-variant-numeric: tabular-nums;
+}
+
+.slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 16px;
+  margin-bottom: 8px;
+  touch-action: none;
+}
+
+.track {
+  position: relative;
+  flex-grow: 1;
+  height: 3px;
+  background: #2a2a3e;
+  border-radius: 2px;
+}
+
+.range {
+  position: absolute;
+  height: 100%;
+  background: #4488cc;
+  border-radius: 2px;
+}
+
+.thumb {
+  display: block;
+  width: 14px;
+  height: 14px;
+  background: #6699dd;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  cursor: grab;
+}
+
+.gridContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.grid {
+  display: grid;
+  gap: 0;
+}
+
+.cell {
+  width: 100%;
+  height: 100%;
+}
+
+.empty {
+  color: #555;
+  font-size: 12px;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.navBtn {
+  flex: 1;
+  padding: 6px;
+  background: #2a2a4a;
+  border: 1px solid #3a3a5a;
+  border-radius: 4px;
+  color: #c0c0d0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.navBtn:hover:not(:disabled) {
+  background: #3a3a5a;
+}
+
+.navBtn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
