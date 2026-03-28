@@ -15,7 +15,16 @@ export type VoxelStore = {
 export type RenderBuffer = {
   matrices: Float32Array;
   types: Uint8Array;
+  colors: Float32Array;
   count: number;
+};
+
+export type BlockColors = Record<BlockType, string>;
+
+export type TreeSnapshot = {
+  presetId: PresetId;
+  params: TreeParams;
+  blockColors: BlockColors;
 };
 
 // --- Skeleton ---
@@ -109,6 +118,7 @@ export type TreeParams = {
   windBias: number;
   age: number;
   randomSeed: number;
+  colorRandomness: number;
   minBranchThickness: number;
   leafCleanup: number;
   symmetryAssist: number;

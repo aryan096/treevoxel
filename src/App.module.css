@@ -1,19 +1,123 @@
 .layout {
   display: grid;
-  grid-template-columns: 1fr 360px;
-  height: 100vh;
+  grid-template-areas:
+    'viewport'
+    'sidebar';
+  grid-template-rows: minmax(0, 1fr) minmax(320px, 50dvh);
+  height: 100dvh;
   overflow: hidden;
+  background:
+    radial-gradient(circle at top, rgba(82, 134, 201, 0.18), transparent 38%),
+    linear-gradient(180deg, #111421 0%, #090c14 100%);
 }
 
 .viewport {
+  grid-area: viewport;
   position: relative;
-  background: #1a1a2e;
+  min-height: 0;
+  background:
+    radial-gradient(circle at top, rgba(95, 168, 255, 0.16), transparent 30%),
+    #161b2a;
 }
 
 .sidebar {
+  grid-area: sidebar;
   display: flex;
   flex-direction: column;
-  background: #0f0f1a;
-  border-left: 1px solid #2a2a3e;
+  min-height: 0;
   overflow: hidden;
+  background: rgba(8, 11, 20, 0.96);
+  border-top: 1px solid rgba(124, 157, 203, 0.24);
+  box-shadow: 0 -20px 48px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(18px);
+}
+
+.tabBar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid rgba(124, 157, 203, 0.16);
+}
+
+.tab {
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(124, 157, 203, 0.14);
+  border-radius: 12px;
+  background: rgba(22, 27, 42, 0.82);
+  color: #96a5c8;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.tab:hover {
+  border-color: rgba(124, 157, 203, 0.3);
+  color: #dce4f7;
+}
+
+.tabActive {
+  background: linear-gradient(180deg, rgba(93, 143, 211, 0.34), rgba(34, 46, 77, 0.94));
+  border-color: rgba(122, 174, 239, 0.48);
+  color: #eef4ff;
+  transform: translateY(-1px);
+}
+
+.panelBody {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.settingsPanel,
+.layersPanel,
+.communityPanel,
+.exportPanel,
+.aboutPanel {
+  height: 100%;
+  min-height: 0;
+}
+
+.settingsPanel {
+  display: flex;
+  flex-direction: column;
+}
+
+.exportPanel,
+.communityPanel,
+.aboutPanel {
+  padding: 12px 14px 14px;
+}
+
+@media (min-width: 960px) {
+  .layout {
+    grid-template-areas: 'sidebar viewport';
+    grid-template-columns: 420px minmax(0, 1fr);
+    grid-template-rows: 100dvh;
+  }
+
+  .sidebar {
+    border-top: none;
+    border-left: none;
+    border-right: 1px solid rgba(124, 157, 203, 0.24);
+    box-shadow: 20px 0 48px rgba(0, 0, 0, 0.28);
+  }
+
+  .tabBar {
+    gap: 8px;
+    padding: 18px 18px 12px;
+  }
+
+  .tab {
+    min-height: 44px;
+    padding: 0 14px;
+    border-radius: 14px;
+    font-size: 13px;
+  }
 }

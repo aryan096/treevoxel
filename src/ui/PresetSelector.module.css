@@ -1,4 +1,6 @@
 .container {
+  width: 100%;
+  min-width: 0;
   margin-bottom: 16px;
 }
 
@@ -16,6 +18,8 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   padding: 8px 12px;
   background: #1e1e30;
   border: 1px solid #3a3a5a;
@@ -23,6 +27,13 @@
   color: #e0e0e0;
   font-size: 13px;
   cursor: pointer;
+}
+
+.trigger > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .trigger:hover {
@@ -61,4 +72,33 @@
   font-size: 11px;
   color: #777;
   margin-top: 2px;
+}
+
+@media (max-width: 380px) {
+  .container {
+    margin-bottom: 14px;
+  }
+
+  .label {
+    font-size: 10px;
+    margin-bottom: 5px;
+  }
+
+  .trigger {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
+  .icon {
+    font-size: 9px;
+  }
+
+  .item {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+
+  .itemDesc {
+    font-size: 10px;
+  }
 }

@@ -2,20 +2,25 @@
   position: absolute;
   top: 12px;
   left: 12px;
+  right: 12px;
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   z-index: 10;
+  pointer-events: none;
 }
 
 .toggle {
+  min-height: 34px;
   padding: 6px 10px;
   font-size: 11px;
   background: rgba(15, 15, 26, 0.8);
   border: 1px solid #3a3a5a;
-  border-radius: 4px;
+  border-radius: 999px;
   color: #777;
   cursor: pointer;
   backdrop-filter: blur(4px);
+  pointer-events: auto;
 }
 
 .toggle:hover {

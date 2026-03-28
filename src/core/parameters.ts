@@ -174,6 +174,13 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     effectDecrease: 'Different random variation.',
     min: 0, max: 99999, step: 1, defaultValue: 42,
   },
+  {
+    id: 'colorRandomness', label: 'Color Randomness', group: 'environment',
+    description: 'How much per-block color variation is applied to logs, branches, and leaves.',
+    effectIncrease: 'More mottled, varied block colors.',
+    effectDecrease: 'Flatter, more uniform block colors.',
+    min: 0, max: 2, step: 0.05, defaultValue: 1,
+  },
   // --- Minecraft Readability ---
   {
     id: 'minBranchThickness', label: 'Min Branch Thickness', group: 'minecraft',

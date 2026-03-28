@@ -1,0 +1,148 @@
+{
+  "submissions": [
+    {
+      "id": "a8c5420a-a54f-42c7-ad22-1abefe0c9fe1",
+      "creationName": "test",
+      "authorName": "ur momma",
+      "status": "approved",
+      "createdAt": "2026-03-28T18:27:09.556Z",
+      "reviewedAt": "2026-03-28T18:27:19.671Z",
+      "snapshot": {
+        "presetId": "spruce",
+        "params": {
+          "height": 20,
+          "crownWidth": 12,
+          "crownDepth": 0.6,
+          "trunkBaseRadius": 2,
+          "trunkTaper": 0.7,
+          "trunkLean": 0,
+          "clearTrunkHeight": 0.3,
+          "trunkCurvature": 0.1,
+          "primaryBranchCount": 6,
+          "branchAngle": 45,
+          "branchAngleVariance": 10,
+          "branchLengthRatio": 0.7,
+          "branchOrderDepth": 2,
+          "branchDensity": 0.6,
+          "branchDroop": 0.2,
+          "apicalDominance": 0.5,
+          "crownFullness": 0.7,
+          "leafClusterRadius": 2,
+          "leafDensity": 0.7,
+          "interiorLeafPruning": 0.3,
+          "phototropism": 0.5,
+          "windBias": 0,
+          "age": 0.5,
+          "randomSeed": 42,
+          "colorRandomness": 1,
+          "minBranchThickness": 1,
+          "leafCleanup": 0.5,
+          "symmetryAssist": 0.3,
+          "buildabilityBias": 0.5,
+          "crownShape": "ovoid"
+        },
+        "blockColors": {
+          "log": "#6b4226",
+          "branch": "#8b6914",
+          "leaf": "#4d9a45"
+        }
+      }
+    },
+    {
+      "id": "8e58417c-21c6-46f2-b96a-2e366aabd1ba",
+      "creationName": "test again",
+      "authorName": "wahoo",
+      "status": "approved",
+      "createdAt": "2026-03-28T18:28:01.702Z",
+      "reviewedAt": "2026-03-28T18:28:16.047Z",
+      "snapshot": {
+        "presetId": "spruce",
+        "params": {
+          "height": 20,
+          "crownWidth": 12,
+          "crownDepth": 0.6,
+          "trunkBaseRadius": 2,
+          "trunkTaper": 0.7,
+          "trunkLean": 0,
+          "clearTrunkHeight": 0.3,
+          "trunkCurvature": 0.1,
+          "primaryBranchCount": 6,
+          "branchAngle": 45,
+          "branchAngleVariance": 10,
+          "branchLengthRatio": 0.7,
+          "branchOrderDepth": 2,
+          "branchDensity": 0.6,
+          "branchDroop": 0.2,
+          "apicalDominance": 0.5,
+          "crownFullness": 0.7,
+          "leafClusterRadius": 2,
+          "leafDensity": 0.7,
+          "interiorLeafPruning": 0.3,
+          "phototropism": 0.5,
+          "windBias": 0,
+          "age": 0.5,
+          "randomSeed": 42,
+          "colorRandomness": 1,
+          "minBranchThickness": 1,
+          "leafCleanup": 0.5,
+          "symmetryAssist": 0.3,
+          "buildabilityBias": 0.5,
+          "crownShape": "ovoid"
+        },
+        "blockColors": {
+          "log": "#6b4226",
+          "branch": "#8b6914",
+          "leaf": "#4d9a45"
+        }
+      }
+    },
+    {
+      "id": "942379cf-d747-4c70-ae38-c02ac7a02cd6",
+      "creationName": "tall boi",
+      "authorName": "aryab",
+      "status": "approved",
+      "createdAt": "2026-03-28T18:28:34.278Z",
+      "reviewedAt": "2026-03-28T18:28:39.337Z",
+      "snapshot": {
+        "presetId": "spruce",
+        "params": {
+          "height": 80,
+          "crownWidth": 12,
+          "crownDepth": 0.6,
+          "trunkBaseRadius": 2,
+          "trunkTaper": 0.7,
+          "trunkLean": 0,
+          "clearTrunkHeight": 0.3,
+          "trunkCurvature": 0.1,
+          "primaryBranchCount": 6,
+          "branchAngle": 45,
+          "branchAngleVariance": 10,
+          "branchLengthRatio": 0.7,
+          "branchOrderDepth": 2,
+          "branchDensity": 0.6,
+          "branchDroop": 0.2,
+          "apicalDominance": 0.5,
+          "crownFullness": 0.7,
+          "leafClusterRadius": 2,
+          "leafDensity": 0.7,
+          "interiorLeafPruning": 0.3,
+          "phototropism": 0.5,
+          "windBias": 0,
+          "age": 0.5,
+          "randomSeed": 42,
+          "colorRandomness": 1,
+          "minBranchThickness": 1,
+          "leafCleanup": 0.5,
+          "symmetryAssist": 0.3,
+          "buildabilityBias": 0.5,
+          "crownShape": "ovoid"
+        },
+        "blockColors": {
+          "log": "#6b4226",
+          "branch": "#8b6914",
+          "leaf": "#4d9a45"
+        }
+      }
+    }
+  ]
+}

@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:server": "node server/community-server.mjs",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "start:server": "node server/community-server.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

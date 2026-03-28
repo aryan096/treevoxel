@@ -54,7 +54,8 @@ export default function LayerBrowser() {
   }, [cells]);
 
   const maxDim = Math.max(gridW, gridH, 1);
-  const cellSize = Math.min(10, Math.floor(220 / maxDim));
+  const cellSize = Math.max(10, Math.min(16, Math.floor(280 / maxDim)));
+  const axisSize = Math.max(cellSize, 20);
 
   return (
     <div className={styles.container}>
@@ -85,30 +86,57 @@ export default function LayerBrowser() {
           <div className={styles.empty}>Empty layer</div>
         ) : (
           <div
-            className={styles.grid}
+            className={styles.axisFrame}
             style={{
-              gridTemplateColumns: `repeat(${gridW}, ${cellSize}px)`,
-              gridTemplateRows: `repeat(${gridH}, ${cellSize}px)`,
+              gridTemplateColumns: `${axisSize}px repeat(${gridW}, ${cellSize}px)`,
+              gridTemplateRows: `${axisSize}px repeat(${gridH}, ${cellSize}px)`,
             }}
           >
-            {Array.from({ length: gridH }, (_, row) =>
-              Array.from({ length: gridW }, (_, col) => {
-                const x = gridMinX + col;
-                const z = gridMinZ + row;
-                const type = cellMap.get(`${x},${z}`);
-                return (
-                  <div
-                    key={`${x},${z}`}
-                    className={styles.cell}
-                    style={{
-                      backgroundColor: type ? BLOCK_COLORS[type] : 'transparent',
-                      border: type ? 'none' : '1px solid #1a1a2e',
-                    }}
-                    title={type ? `(${x}, ${z}) ${type}` : ''}
-                  />
-                );
-              }),
-            )}
+            <div className={styles.corner}>Z/X</div>
+            {Array.from({ length: gridW }, (_, col) => {
+              const x = gridMinX + col;
+              return (
+                <div key={`x-${x}`} className={styles.axisCell} title={`X=${x}`}>
+                  {x}
+                </div>
+              );
+            })}
+            {Array.from({ length: gridH }, (_, row) => {
+              const z = gridMinZ + row;
+              return (
+                <div key={`z-${z}`} className={styles.axisCell} title={`Z=${z}`}>
+                  {z}
+                </div>
+              );
+            })}
+            <div
+              className={styles.grid}
+              style={{
+                gridColumn: `2 / span ${gridW}`,
+                gridRow: `2 / span ${gridH}`,
+                gridTemplateColumns: `repeat(${gridW}, ${cellSize}px)`,
+                gridTemplateRows: `repeat(${gridH}, ${cellSize}px)`,
+              }}
+            >
+              {Array.from({ length: gridH }, (_, row) =>
+                Array.from({ length: gridW }, (_, col) => {
+                  const x = gridMinX + col;
+                  const z = gridMinZ + row;
+                  const type = cellMap.get(`${x},${z}`);
+                  return (
+                    <div
+                      key={`${x},${z}`}
+                      className={styles.cell}
+                      style={{
+                        backgroundColor: type ? BLOCK_COLORS[type] : 'transparent',
+                        border: type ? 'none' : '1px solid #1a1a2e',
+                      }}
+                      title={type ? `(${x}, ${z}) ${type}` : `(${x}, ${z})`}
+                    />
+                  );
+                }),
+              )}
+            </div>
           </div>
         )}
       </div>

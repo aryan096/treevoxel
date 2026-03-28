@@ -30,7 +30,7 @@ describe('parameters', () => {
       'branchLengthRatio', 'branchOrderDepth', 'branchDensity', 'branchDroop',
       'apicalDominance', 'crownShape', 'crownFullness', 'leafClusterRadius',
       'leafDensity', 'interiorLeafPruning', 'phototropism', 'windBias', 'age',
-      'randomSeed', 'minBranchThickness', 'leafCleanup', 'symmetryAssist',
+      'randomSeed', 'colorRandomness', 'minBranchThickness', 'leafCleanup', 'symmetryAssist',
       'buildabilityBias',
     ];
     for (const key of requiredKeys) {

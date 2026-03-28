@@ -1,8 +1,18 @@
 import { create } from 'zustand';
-import type { TreeParams, PresetId, VoxelStore, RenderBuffer, TreeModel } from '../core/types';
+import type {
+  TreeParams,
+  PresetId,
+  VoxelStore,
+  RenderBuffer,
+  TreeModel,
+  BlockColors,
+  BlockType,
+  TreeSnapshot,
+} from '../core/types';
 import { getDefaultParams } from '../core/parameters';
 import { PRESETS, applyPreset } from '../core/presets';
 import { generateTree, type GenerationResult } from '../core/generate';
+import { buildRenderBuffer } from '../core/renderBuffer';
 
 type DisplayToggles = {
   showLog: boolean;
@@ -10,6 +20,7 @@ type DisplayToggles = {
   showLeaf: boolean;
   showGrid: boolean;
   showAxes: boolean;
+  darkMode: boolean;
 };
 
 type TreeState = {
@@ -18,6 +29,7 @@ type TreeState = {
   params: TreeParams;
   activeLayerIndex: number;
   display: DisplayToggles;
+  blockColors: BlockColors;
 
   // Derived (computed eagerly on param change)
   model: TreeModel;
@@ -29,26 +41,36 @@ type TreeState = {
   setPreset: (id: PresetId) => void;
   setActiveLayer: (y: number) => void;
   toggleDisplay: (key: keyof DisplayToggles) => void;
+  setBlockColor: (type: BlockType, color: string) => void;
   randomizeSeed: () => void;
+  loadSnapshot: (snapshot: TreeSnapshot) => void;
 };
 
-function regenerate(params: TreeParams): GenerationResult {
-  return generateTree(params);
+const DEFAULT_BLOCK_COLORS: BlockColors = {
+  log: '#6b4226',
+  branch: '#8b6914',
+  leaf: '#4d9a45',
+};
+
+function regenerate(params: TreeParams, blockColors: BlockColors): GenerationResult {
+  return generateTree(params, blockColors);
 }
 
 const initialParams = applyPreset(getDefaultParams(), PRESETS[0]);
-const initialResult = regenerate(initialParams);
+const initialResult = regenerate(initialParams, DEFAULT_BLOCK_COLORS);
 
 export const useTreeStore = create<TreeState>((set) => ({
   presetId: PRESETS[0].id,
   params: initialParams,
   activeLayerIndex: 0,
+  blockColors: DEFAULT_BLOCK_COLORS,
   display: {
     showLog: true,
     showBranch: true,
     showLeaf: true,
     showGrid: true,
     showAxes: false,
+    darkMode: false,
   },
 
   model: initialResult.model,
@@ -58,7 +80,7 @@ export const useTreeStore = create<TreeState>((set) => ({
   setParam: (id, value) =>
     set((state) => {
       const params = { ...state.params, [id]: value };
-      const result = regenerate(params);
+      const result = regenerate(params, state.blockColors);
       return {
         params,
         model: result.model,
@@ -68,11 +90,11 @@ export const useTreeStore = create<TreeState>((set) => ({
     }),
 
   setPreset: (id) =>
-    set(() => {
+    set((state) => {
       const preset = PRESETS.find((p) => p.id === id);
       if (!preset) return {};
       const params = applyPreset(getDefaultParams(), preset);
-      const result = regenerate(params);
+      const result = regenerate(params, state.blockColors);
       return {
         presetId: id,
         params,
@@ -90,15 +112,38 @@ export const useTreeStore = create<TreeState>((set) => ({
       display: { ...state.display, [key]: !state.display[key] },
     })),
 
+  setBlockColor: (type, color) =>
+    set((state) => {
+      const blockColors = { ...state.blockColors, [type]: color };
+      return {
+        blockColors,
+        buffer: buildRenderBuffer(state.voxels, blockColors, state.params.colorRandomness),
+      };
+    }),
+
   randomizeSeed: () =>
     set((state) => {
       const params = { ...state.params, randomSeed: Math.floor(Math.random() * 99999) };
-      const result = regenerate(params);
+      const result = regenerate(params, state.blockColors);
       return {
         params,
         model: result.model,
         voxels: result.voxels,
         buffer: result.buffer,
+      };
+    }),
+
+  loadSnapshot: (snapshot) =>
+    set(() => {
+      const result = regenerate(snapshot.params, snapshot.blockColors);
+      return {
+        presetId: snapshot.presetId,
+        params: snapshot.params,
+        blockColors: snapshot.blockColors,
+        model: result.model,
+        voxels: result.voxels,
+        buffer: result.buffer,
+        activeLayerIndex: 0,
       };
     }),
 }));
