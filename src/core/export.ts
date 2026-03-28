@@ -17,7 +17,7 @@ type ExportJSON = {
 /**
  * Export voxel data as a JSON string with block coordinates and metadata.
  */
-export function exportJSON(store: VoxelStore, params: TreeParams): string {
+export function exportJSON(store: VoxelStore, _params: TreeParams): string {
   const blocks: ExportBlock[] = [];
 
   const sortedYs = Array.from(store.layers.keys()).sort((a, b) => a - b);

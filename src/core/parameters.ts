@@ -1,4 +1,4 @@
-import type { ParameterDef, CategoricalParameterDef, TreeParams, CrownShape } from './types';
+import type { ParameterDef, CategoricalParameterDef, TreeParams } from './types';
 
 export const PARAMETER_DEFS: ParameterDef[] = [
   // --- Global Dimensions ---
