@@ -1,0 +1,54 @@
+.root {
+  flex: 1;
+  overflow: hidden;
+}
+
+.viewport {
+  height: 100%;
+  width: 100%;
+}
+
+.inner {
+  padding: 16px;
+}
+
+.seedButton {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 16px;
+  background: #2a2a4a;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  color: #c0c0d0;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.seedButton:hover {
+  background: #3a3a5a;
+  border-color: #4488cc;
+}
+
+.stats {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  font-size: 11px;
+  color: #666;
+  border-top: 1px solid #2a2a3e;
+  margin-top: 8px;
+}
+
+.scrollbar {
+  display: flex;
+  width: 6px;
+  padding: 2px;
+  background: transparent;
+  touch-action: none;
+}
+
+.thumb {
+  flex: 1;
+  background: #3a3a5a;
+  border-radius: 3px;
+}

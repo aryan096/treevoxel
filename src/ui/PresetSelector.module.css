@@ -1,0 +1,64 @@
+.container {
+  margin-bottom: 16px;
+}
+
+.label {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 12px;
+  background: #1e1e30;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  color: #e0e0e0;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.trigger:hover {
+  border-color: #4488cc;
+}
+
+.icon {
+  font-size: 10px;
+  color: #666;
+}
+
+.content {
+  background: #1e1e30;
+  border: 1px solid #3a3a5a;
+  border-radius: 6px;
+  padding: 4px;
+  z-index: 100;
+  min-width: var(--radix-select-trigger-width);
+}
+
+.item {
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+  font-size: 13px;
+  color: #e0e0e0;
+}
+
+.item:hover,
+.item[data-highlighted] {
+  background: #2a2a4a;
+}
+
+.itemDesc {
+  font-size: 11px;
+  color: #777;
+  margin-top: 2px;
+}

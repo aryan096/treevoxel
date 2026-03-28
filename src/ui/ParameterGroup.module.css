@@ -1,0 +1,42 @@
+.container {
+  margin-bottom: 4px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 8px 0;
+  background: none;
+  border: none;
+  border-bottom: 1px solid #2a2a3e;
+  color: #e0e0e0;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+}
+
+.header:hover {
+  color: #88bbff;
+}
+
+.chevron {
+  font-size: 10px;
+  width: 16px;
+  color: #666;
+}
+
+.title {
+  flex: 1;
+}
+
+.count {
+  font-size: 11px;
+  color: #555;
+  font-weight: 400;
+}
+
+.body {
+  padding: 8px 0 4px 4px;
+}
