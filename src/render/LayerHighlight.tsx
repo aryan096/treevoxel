@@ -1,8 +1,15 @@
+import { useEffect } from 'react';
+import { useThree } from '@react-three/fiber';
 import { useTreeStore } from '../store/treeStore';
 
 export default function LayerHighlight() {
   const activeLayer = useTreeStore((s) => s.activeLayerIndex);
   const voxels = useTreeStore((s) => s.voxels);
+  const invalidate = useThree((s) => s.invalidate);
+
+  useEffect(() => {
+    invalidate();
+  }, [activeLayer, invalidate]);
 
   if (voxels.layers.size === 0) return null;
 
