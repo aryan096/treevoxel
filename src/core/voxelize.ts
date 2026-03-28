@@ -1,5 +1,5 @@
 import type { TreeModel, TreeParams, VoxelStore, BlockType } from './types';
-import { pack } from './pack';
+import { pack, GRID_SIZE } from './pack';
 import { createRng } from './rng';
 
 /**
@@ -101,8 +101,8 @@ export function voxelize(model: TreeModel, params: TreeParams): VoxelStore {
         let neighbors = 0;
         if (layer.has(key + 1)) neighbors++;
         if (layer.has(key - 1)) neighbors++;
-        if (layer.has(key + 256)) neighbors++;
-        if (layer.has(key - 256)) neighbors++;
+        if (layer.has(key + GRID_SIZE)) neighbors++;
+        if (layer.has(key - GRID_SIZE)) neighbors++;
         const above = layers.get(y + 1);
         if (above?.has(key)) neighbors++;
         const below = layers.get(y - 1);
