@@ -7,10 +7,10 @@
 .label {
   display: block;
   font-size: 11px;
-  color: #888;
+  color: #8a7d6a;
   margin-bottom: 6px;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .trigger {
@@ -21,12 +21,14 @@
   max-width: 100%;
   min-width: 0;
   padding: 8px 12px;
-  background: #1e1e30;
-  border: 1px solid #3a3a5a;
-  border-radius: 6px;
-  color: #e0e0e0;
+  background: #261f16;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
+  color: #c8b89a;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 13px;
   cursor: pointer;
+  transition: border-color 140ms ease;
 }
 
 .trigger > span:first-child {
@@ -37,18 +39,18 @@
 }
 
 .trigger:hover {
-  border-color: #4488cc;
+  border-color: rgba(138, 125, 106, 0.4);
 }
 
 .icon {
   font-size: 10px;
-  color: #666;
+  color: #5c4a32;
 }
 
 .content {
-  background: #1e1e30;
-  border: 1px solid #3a3a5a;
-  border-radius: 6px;
+  background: #261f16;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
   padding: 4px;
   z-index: 100;
   min-width: var(--radix-select-trigger-width);
@@ -60,17 +62,21 @@
   cursor: pointer;
   outline: none;
   font-size: 13px;
-  color: #e0e0e0;
+  color: #c8b89a;
 }
 
 .item:hover,
 .item[data-highlighted] {
-  background: #2a2a4a;
+  background: #3a3025;
+}
+
+.item[data-state='checked'] {
+  color: #7a8a5a;
 }
 
 .itemDesc {
   font-size: 11px;
-  color: #777;
+  color: #5c4a32;
   margin-top: 2px;
 }
 
