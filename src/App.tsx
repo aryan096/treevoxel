@@ -36,44 +36,40 @@ export default function App() {
   return (
     <div className={styles.layout}>
       <aside className={styles.sidebar}>
-        <div className={styles.tabBar} role="tablist" aria-label="Tool panels">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'settings'}
-            className={`${styles.tab} ${activeTab === 'settings' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('settings')}
-          >
-            Settings
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'layers'}
-            className={`${styles.tab} ${activeTab === 'layers' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('layers')}
-          >
-            Layers
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'community'}
-            className={`${styles.tab} ${activeTab === 'community' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('community')}
-          >
-            Community
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={activeTab === 'about'}
-            className={`${styles.tab} ${activeTab === 'about' ? styles.tabActive : ''}`}
-            onClick={() => setActiveTab('about')}
-          >
-            About
-          </button>
-        </div>
+        <header className={styles.header}>
+          <div className={styles.branding}>
+            <img src="/logo.svg" alt="Treevoxel" className={styles.logo} />
+            <div className={styles.brandText}>
+              <span className={styles.appTitle}>Treevoxel</span>
+              <span className={styles.subtitle}>Voxel tree authoring tool</span>
+            </div>
+          </div>
+        </header>
+
+        <div className={styles.separator} />
+
+        <nav className={styles.tabBar} role="tablist" aria-label="Tool panels">
+          {([
+            { id: 'settings' as const, icon: '\u2699', label: 'Settings' },
+            { id: 'layers' as const, icon: '\u25eb', label: 'Layers' },
+            { id: 'community' as const, icon: '\u2666', label: 'Community' },
+            { id: 'about' as const, icon: '\u2139', label: 'About' },
+          ]).map((tab) => (
+            <button
+              key={tab.id}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              className={`${styles.tab} ${activeTab === tab.id ? styles.tabActive : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <span className={styles.tabIcon}>{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        <div className={styles.separator} />
 
         <div className={styles.panelBody}>
           {activeTab === 'settings' ? (
