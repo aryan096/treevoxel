@@ -10,7 +10,7 @@
 }
 
 .inner {
-  padding: 8px 14px 16px;
+  padding: 8px 0 16px;
 }
 
 .featuredSection {
@@ -24,26 +24,27 @@
   min-height: 42px;
   padding: 8px 14px;
   margin-bottom: 16px;
-  background: #1a2335;
-  border: 1px solid rgba(124, 157, 203, 0.18);
-  border-radius: 12px;
-  color: #d5ddf0;
+  background: #261f16;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
+  color: #c8b89a;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 140ms ease;
 }
 
 .seedButton:hover {
-  background: #22304a;
-  border-color: rgba(95, 168, 255, 0.46);
+  background: #3a3025;
 }
 
 .colorSection {
   margin-bottom: 18px;
   padding: 12px;
-  background: rgba(16, 20, 31, 0.92);
-  border: 1px solid rgba(124, 157, 203, 0.14);
-  border-radius: 16px;
+  background: #1e1b14;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
 }
 
 .colorSectionHeader {
@@ -56,14 +57,14 @@
 .colorSectionTitle {
   font-size: 12px;
   font-weight: 600;
-  color: #e0e0e0;
-  letter-spacing: 0.04em;
+  color: #7a8a5a;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
 .colorSectionCount {
   font-size: 11px;
-  color: #7d89a8;
+  color: #5c4a32;
 }
 
 .colorGrid {
@@ -78,7 +79,7 @@
 
 .colorLabel {
   font-size: 12px;
-  color: #c0c0d0;
+  color: #8a7d6a;
 }
 
 .colorControl {
@@ -93,7 +94,7 @@
   height: 28px;
   padding: 0;
   background: transparent;
-  border: 1px solid #3a3a5a;
+  border: 1px solid rgba(138, 125, 106, 0.2);
   border-radius: 6px;
   cursor: pointer;
 }
@@ -111,10 +112,10 @@
   flex: 1;
   min-width: 0;
   padding: 6px 10px;
-  background: #1e1e30;
-  border: 1px solid #3a3a5a;
+  background: #261f16;
+  border: 1px solid rgba(138, 125, 106, 0.2);
   border-radius: 6px;
-  color: #e0e0e0;
+  color: #c8b89a;
   font-size: 12px;
   letter-spacing: 0.06em;
 }
@@ -124,8 +125,8 @@
   justify-content: space-between;
   padding: 12px 0;
   font-size: 11px;
-  color: #7f8ba8;
-  border-top: 1px solid rgba(124, 157, 203, 0.14);
+  color: #8a7d6a;
+  border-top: 1px solid #261f16;
   margin-top: 8px;
 }
 
@@ -134,16 +135,16 @@
   gap: 12px;
   margin-top: 8px;
   padding: 14px;
-  background: rgba(16, 20, 31, 0.92);
-  border: 1px solid rgba(124, 157, 203, 0.14);
-  border-radius: 18px;
+  background: #1e1b14;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
 }
 
 .exportTitle {
   font-size: 11px;
-  color: #95a2c2;
+  color: #7a8a5a;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .exportButtons {
@@ -154,18 +155,19 @@
 .exportButton {
   min-height: 42px;
   padding: 6px 10px;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 12px;
-  font-weight: 600;
-  background: #1a2335;
-  border: 1px solid rgba(124, 157, 203, 0.18);
-  border-radius: 10px;
-  color: #d5ddf0;
+  font-weight: 500;
+  background: #261f16;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
+  color: #c8b89a;
   cursor: pointer;
+  transition: background 140ms ease;
 }
 
 .exportButton:hover {
-  background: #22304a;
-  border-color: rgba(95, 168, 255, 0.46);
+  background: #3a3025;
 }
 
 .scrollbar {
@@ -178,8 +180,12 @@
 
 .thumb {
   flex: 1;
-  background: #3a3a5a;
+  background: #3a3025;
   border-radius: 3px;
+}
+
+.thumb:hover {
+  background: #5c4a32;
 }
 
 .categoricalParam {
@@ -192,7 +198,7 @@
 
 .categoricalLabel {
   font-size: 12px;
-  color: #c0c0d0;
+  color: #8a7d6a;
 }
 
 .categoricalTrigger {
@@ -201,18 +207,19 @@
   gap: 6px;
   min-height: 36px;
   padding: 5px 10px;
-  background: #1a2335;
-  border: 1px solid rgba(124, 157, 203, 0.18);
-  border-radius: 10px;
-  color: #e0e0e0;
+  background: #261f16;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
+  color: #c8b89a;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 12px;
   cursor: pointer;
 }
 
 .categoricalContent {
-  background: #111722;
-  border: 1px solid rgba(124, 157, 203, 0.18);
-  border-radius: 10px;
+  background: #261f16;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
   padding: 4px;
   z-index: 100;
 }
@@ -223,11 +230,12 @@
   cursor: pointer;
   outline: none;
   font-size: 12px;
-  color: #e0e0e0;
+  color: #c8b89a;
   text-transform: capitalize;
 }
 
 .categoricalItem:hover,
 .categoricalItem[data-highlighted] {
-  background: #2a2a4a;
+  background: #3a3025;
+  color: #c8b89a;
 }
