@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import * as Select from '@radix-ui/react-select';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import type { BlockType, ParameterDef } from '../core/types';
@@ -10,12 +11,17 @@ import ParameterSlider from './ParameterSlider';
 import styles from './ParameterPanel.module.css';
 
 const GROUP_ORDER = ['dimensions', 'trunk', 'branching', 'crown', 'environment'];
-const FEATURED_PARAM_IDS = ['randomSeed', 'colorRandomness'] as const;
+const FEATURED_PARAM_IDS = ['colorRandomness', 'randomSeed'] as const;
 const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   log: 'Log',
   branch: 'Branch',
   leaf: 'Leaf',
 };
+const SCROLLBAR_WIDTH = 7;
+
+function formatOptionLabel(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
 
 function downloadFile(content: string, filename: string, mime: string): void {
   const blob = new Blob([content], { type: mime });
@@ -54,25 +60,13 @@ export default function ParameterPanel() {
   };
 
   return (
-    <ScrollArea.Root className={styles.root}>
+    <ScrollArea.Root
+      className={styles.root}
+      style={{ '--scrollbar-width': `${SCROLLBAR_WIDTH}px` } as CSSProperties}
+    >
       <ScrollArea.Viewport className={styles.viewport}>
         <div className={styles.inner}>
-          <section className={styles.featuredSection}>
-            {featuredParams.map((param) => (
-              <ParameterSlider
-                key={param.id}
-                param={param}
-                value={(params as unknown as Record<string, number>)[param.id] ?? param.defaultValue}
-                onChange={(value) => setParam(param.id, value)}
-              />
-            ))}
-          </section>
-
           <PresetSelector />
-
-          <button className={styles.seedButton} onClick={randomizeSeed}>
-            Randomize Seed
-          </button>
 
           <section className={styles.colorSection}>
             <div className={styles.colorSectionHeader}>
@@ -96,6 +90,24 @@ export default function ParameterPanel() {
                 </label>
               ))}
             </div>
+          </section>
+
+          <section className={styles.featuredSection}>
+            {featuredParams.map((param) => (
+              <ParameterSlider
+                key={param.id}
+                param={param}
+                value={(params as unknown as Record<string, number>)[param.id] ?? param.defaultValue}
+                onChange={(value) => setParam(param.id, value)}
+                action={param.id === 'randomSeed'
+                  ? {
+                      label: 'Randomize',
+                      icon: '\u27f3',
+                      onClick: randomizeSeed,
+                    }
+                  : undefined}
+              />
+            ))}
           </section>
 
           {GROUP_ORDER.map((group) => {
@@ -123,7 +135,9 @@ export default function ParameterPanel() {
                         onValueChange={(v) => setParam(cp.id, v)}
                       >
                         <Select.Trigger className={styles.categoricalTrigger}>
-                          <Select.Value />
+                          <Select.Value aria-label={formatOptionLabel(params[cp.id] as string)}>
+                            {formatOptionLabel(params[cp.id] as string)}
+                          </Select.Value>
                           <Select.Icon>{'\u25bc'}</Select.Icon>
                         </Select.Trigger>
                         <Select.Portal>
@@ -131,7 +145,7 @@ export default function ParameterPanel() {
                             <Select.Viewport>
                               {cp.options.map((opt) => (
                                 <Select.Item key={opt} value={opt} className={styles.categoricalItem}>
-                                  <Select.ItemText>{opt}</Select.ItemText>
+                                  <Select.ItemText>{formatOptionLabel(opt)}</Select.ItemText>
                                 </Select.Item>
                               ))}
                             </Select.Viewport>
@@ -143,12 +157,6 @@ export default function ParameterPanel() {
               </div>
             );
           })}
-
-          <div className={styles.stats}>
-            <span>Blocks: {voxels.count}</span>
-            <span>Layers: {voxels.layers.size}</span>
-          </div>
-
           <section className={styles.exportSection}>
             <span className={styles.exportTitle}>Export</span>
             <div className={styles.exportButtons}>
@@ -162,7 +170,10 @@ export default function ParameterPanel() {
           </section>
         </div>
       </ScrollArea.Viewport>
-      <ScrollArea.Scrollbar className={styles.scrollbar} orientation="vertical">
+      <ScrollArea.Scrollbar
+        className={styles.scrollbar}
+        orientation="vertical"
+      >
         <ScrollArea.Thumb className={styles.thumb} />
       </ScrollArea.Scrollbar>
     </ScrollArea.Root>

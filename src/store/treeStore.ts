@@ -70,7 +70,7 @@ export const useTreeStore = create<TreeState>((set) => ({
     showBranch: true,
     showLeaf: true,
     showGrid: true,
-    showAxes: false,
+    showAxes: true,
     darkMode: false,
   },
 

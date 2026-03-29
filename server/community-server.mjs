@@ -61,6 +61,39 @@ const defaultBlockColors = {
 const allowedPresets = new Set(Object.keys(presetBlockColors));
 const allowedCrownShapes = new Set(['conical', 'spherical', 'ovoid', 'columnar', 'vase', 'weeping', 'irregular']);
 const allowedBlockTypes = new Set(['log', 'branch', 'leaf']);
+const requiredNumericParams = [
+  'randomSeed',
+  'colorRandomness',
+  'height',
+  'crownWidth',
+  'crownDepth',
+  'trunkBaseRadius',
+  'trunkTaper',
+  'trunkLean',
+  'trunkLeanDirection',
+  'clearTrunkHeight',
+  'trunkCurvature',
+  'trunkNoise',
+  'primaryBranchCount',
+  'branchAngle',
+  'branchAngleVariance',
+  'branchLengthRatio',
+  'branchOrderDepth',
+  'branchDensity',
+  'branchDroop',
+  'apicalDominance',
+  'crownFullness',
+  'leafClusterRadius',
+  'leafDensity',
+  'interiorLeafPruning',
+  'minBranchThickness',
+  'leafCleanup',
+  'symmetryAssist',
+  'buildabilityBias',
+];
+const legacyNumericParamDefaults = {
+  trunkLeanDirection: 0,
+};
 
 function json(response, status, payload) {
   response.writeHead(status, {
@@ -103,42 +136,9 @@ function normalizeParams(value) {
     throw new Error('Submission params are invalid.');
   }
 
-  const numericKeys = [
-    'height',
-    'crownWidth',
-    'crownDepth',
-    'trunkBaseRadius',
-    'trunkTaper',
-    'trunkLean',
-    'clearTrunkHeight',
-    'trunkCurvature',
-    'trunkNoise',
-    'primaryBranchCount',
-    'branchAngle',
-    'branchAngleVariance',
-    'branchLengthRatio',
-    'branchOrderDepth',
-    'branchDensity',
-    'branchDroop',
-    'apicalDominance',
-    'crownFullness',
-    'leafClusterRadius',
-    'leafDensity',
-    'interiorLeafPruning',
-    'phototropism',
-    'windBias',
-    'age',
-    'randomSeed',
-    'colorRandomness',
-    'minBranchThickness',
-    'leafCleanup',
-    'symmetryAssist',
-    'buildabilityBias',
-  ];
-
   const params = {};
-  for (const key of numericKeys) {
-    const raw = value[key];
+  for (const key of requiredNumericParams) {
+    const raw = value[key] ?? legacyNumericParamDefaults[key];
     if (typeof raw !== 'number' || !Number.isFinite(raw)) {
       throw new Error(`Param "${key}" is invalid.`);
     }

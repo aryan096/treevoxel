@@ -7,9 +7,14 @@ type Props = {
   param: ParameterDef;
   value: number;
   onChange: (value: number) => void;
+  action?: {
+    label: string;
+    icon: string;
+    onClick: () => void;
+  };
 };
 
-export default function ParameterSlider({ param, value, onChange }: Props) {
+export default function ParameterSlider({ param, value, onChange, action }: Props) {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -34,19 +39,27 @@ export default function ParameterSlider({ param, value, onChange }: Props) {
         </Tooltip.Provider>
         <span className={styles.value}>{Number.isInteger(param.step) ? value : value.toFixed(2)}</span>
       </div>
-      <Slider.Root
-        className={styles.slider}
-        min={param.min}
-        max={param.max}
-        step={param.step}
-        value={[value]}
-        onValueChange={([v]) => onChange(v)}
-      >
-        <Slider.Track className={styles.track}>
-          <Slider.Range className={styles.range} />
-        </Slider.Track>
-        <Slider.Thumb className={styles.thumb} />
-      </Slider.Root>
+      <div className={styles.controlRow}>
+        <Slider.Root
+          className={styles.slider}
+          min={param.min}
+          max={param.max}
+          step={param.step}
+          value={[value]}
+          onValueChange={([v]) => onChange(v)}
+        >
+          <Slider.Track className={styles.track}>
+            <Slider.Range className={styles.range} />
+          </Slider.Track>
+          <Slider.Thumb className={styles.thumb} />
+        </Slider.Root>
+        {action ? (
+          <button type="button" className={styles.actionButton} onClick={action.onClick} aria-label={action.label}>
+            <span>{action.label}</span>
+            <span className={styles.actionIcon} aria-hidden="true">{action.icon}</span>
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

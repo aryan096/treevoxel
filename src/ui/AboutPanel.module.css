@@ -15,28 +15,28 @@
 .title {
   font-size: 18px;
   font-weight: 700;
-  color: #c8b89a;
+  color: var(--text-primary);
 }
 
 .copy {
   margin: 0;
-  color: #8a7d6a;
+  color: var(--text-secondary);
   font-size: 13px;
   line-height: 1.6;
 }
 
 .copy code {
-  color: #c8b89a;
+  color: var(--text-primary);
   font-family: inherit;
 }
 
 .inlineLink {
-  color: #7a8a5a;
+  color: var(--text-accent);
   text-decoration: none;
 }
 
 .inlineLink:hover {
-  color: #8fa06a;
+  color: var(--text-accent-strong);
   text-decoration: underline;
 }
 
@@ -55,7 +55,7 @@
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #7a8a5a;
+  color: var(--text-accent);
 }
 
 .referenceList {
@@ -66,17 +66,17 @@
 }
 
 .referenceItem {
-  color: #8a7d6a;
+  color: var(--text-secondary);
   font-size: 13px;
   line-height: 1.5;
 }
 
 .referenceLink {
-  color: #7a8a5a;
+  color: var(--text-accent);
   text-decoration: none;
 }
 
 .referenceLink:hover {
-  color: #8fa06a;
+  color: var(--text-accent-strong);
   text-decoration: underline;
 }

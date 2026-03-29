@@ -1,0 +1,60 @@
+.legend {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  z-index: 10;
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px;
+  border: 1px solid rgba(138, 125, 106, 0.18);
+  border-radius: 9px;
+  background: rgba(21, 19, 15, 0.72);
+  color: var(--text-secondary);
+  backdrop-filter: blur(5px);
+  pointer-events: none;
+}
+
+.item {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-highlight);
+}
+
+.value {
+  font-size: 11px;
+  line-height: 1.1;
+  color: var(--text-primary);
+}
+
+@media (max-width: 959px) {
+  .legend {
+    gap: 8px;
+    padding: 5px 7px;
+    bottom: 10px;
+  }
+
+  .label {
+    font-size: 8px;
+  }
+
+  .value {
+    font-size: 10px;
+  }
+}
+
+@media (min-width: 960px) {
+  .legend {
+    right: 16px;
+    bottom: 16px;
+  }
+}

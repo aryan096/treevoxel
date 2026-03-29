@@ -19,7 +19,7 @@ export default function LayerHighlight() {
   const depth = voxels.bounds.maxZ - voxels.bounds.minZ + 2;
   const centerX = (voxels.bounds.minX + voxels.bounds.maxX) / 2;
   const centerZ = (voxels.bounds.minZ + voxels.bounds.maxZ) / 2;
-  const sliceColor = darkMode ? '#66d9ff' : '#005fcc';
+  const sliceColor = darkMode ? '#b78a52' : '#8f6538';
   const slabGeometry = useMemo(() => new THREE.BoxGeometry(width, 0.98, depth), [depth, width]);
   const slabEdges = useMemo(() => new THREE.EdgesGeometry(slabGeometry), [slabGeometry]);
 

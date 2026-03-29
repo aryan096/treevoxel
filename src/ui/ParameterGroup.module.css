@@ -10,7 +10,7 @@
   background: none;
   border: none;
   border-bottom: 1px solid #261f16;
-  color: #7a8a5a;
+  color: var(--text-accent);
   cursor: pointer;
   font-family: 'Fraunces', Georgia, serif;
   font-size: 14px;
@@ -19,13 +19,13 @@
 }
 
 .header:hover {
-  color: #8fa06a;
+  color: var(--text-accent-strong);
 }
 
 .chevron {
   font-size: 10px;
   width: 16px;
-  color: #7a8a5a;
+  color: var(--text-accent);
 }
 
 .title {
@@ -34,7 +34,7 @@
 
 .count {
   font-size: 11px;
-  color: #5c4a32;
+  color: var(--text-muted);
   font-weight: 400;
 }
 

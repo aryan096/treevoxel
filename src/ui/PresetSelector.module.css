@@ -7,7 +7,7 @@
 .label {
   display: block;
   font-size: 11px;
-  color: #8a7d6a;
+  color: var(--text-secondary);
   margin-bottom: 6px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -24,7 +24,7 @@
   background: #261f16;
   border: 1px solid rgba(138, 125, 106, 0.2);
   border-radius: 8px;
-  color: #c8b89a;
+  color: var(--text-primary);
   font-family: 'Fraunces', Georgia, serif;
   font-size: 13px;
   cursor: pointer;
@@ -44,7 +44,7 @@
 
 .icon {
   font-size: 10px;
-  color: #5c4a32;
+  color: var(--text-muted);
 }
 
 .content {
@@ -53,7 +53,8 @@
   border-radius: 8px;
   padding: 4px;
   z-index: 100;
-  min-width: var(--radix-select-trigger-width);
+  width: var(--radix-select-trigger-width);
+  max-width: var(--radix-select-trigger-width);
 }
 
 .item {
@@ -62,7 +63,7 @@
   cursor: pointer;
   outline: none;
   font-size: 13px;
-  color: #c8b89a;
+  color: var(--text-primary);
 }
 
 .item:hover,
@@ -71,12 +72,12 @@
 }
 
 .item[data-state='checked'] {
-  color: #7a8a5a;
+  color: var(--text-accent);
 }
 
 .itemDesc {
   font-size: 11px;
-  color: #5c4a32;
+  color: var(--text-muted);
   margin-top: 2px;
 }
 

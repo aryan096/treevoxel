@@ -19,7 +19,7 @@
   background: rgba(21, 19, 15, 0.85);
   border: 1px solid rgba(138, 125, 106, 0.2);
   border-radius: 8px;
-  color: #5c4a32;
+  color: var(--text-muted);
   cursor: pointer;
   backdrop-filter: blur(4px);
   pointer-events: auto;
@@ -28,11 +28,11 @@
 
 .toggle:hover {
   border-color: rgba(138, 125, 106, 0.4);
-  color: #8a7d6a;
+  color: var(--text-secondary);
 }
 
 .active {
-  color: #c8b89a;
+  color: var(--text-primary);
   background: rgba(38, 31, 22, 0.92);
   border-color: #7a8a5a;
 }

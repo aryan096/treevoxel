@@ -6,12 +6,22 @@
   padding: 0;
 }
 
+:root {
+  --text-primary: #d9c7a2;
+  --text-secondary: #a39277;
+  --text-muted: #745f45;
+  --text-accent: #90a567;
+  --text-accent-strong: #a2ba76;
+  --text-highlight: #efd69a;
+  --text-warm: #d4a06d;
+}
+
 html, body, #root {
   height: 100%;
   overflow: hidden;
   font-family: 'Fraunces', Georgia, serif;
   background: #15130f;
-  color: #c8b89a;
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   line-height: 1.4;
 }

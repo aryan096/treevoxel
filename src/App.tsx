@@ -6,6 +6,7 @@ import LayerBrowser from './ui/LayerBrowser';
 import Toolbar from './ui/Toolbar';
 import AboutPanel from './ui/AboutPanel';
 import CommunityPanel from './ui/CommunityPanel';
+import ViewportLegend from './ui/ViewportLegend';
 import { useTreeStore } from './store/treeStore';
 
 export default function App() {
@@ -93,6 +94,7 @@ export default function App() {
       </aside>
       <div className={styles.viewport}>
         <Toolbar />
+        <ViewportLegend />
         <VoxelScene showSliceHighlight={activeTab === 'layers'} />
       </div>
     </div>
