@@ -3,7 +3,7 @@
   flex-direction: column;
   height: 100%;
   min-height: 0;
-  padding: 12px 14px 14px;
+  padding: 12px 0 14px;
 }
 
 .header {
@@ -17,12 +17,12 @@
 .title {
   font-size: 14px;
   font-weight: 700;
-  color: #eef4ff;
+  color: #c8b89a;
 }
 
 .layerInfo {
   font-size: 12px;
-  color: #9aa9c8;
+  color: #8a7d6a;
   font-variant-numeric: tabular-nums;
 }
 
@@ -40,14 +40,14 @@
   position: relative;
   flex-grow: 1;
   height: 4px;
-  background: #242d43;
+  background: #261f16;
   border-radius: 2px;
 }
 
 .range {
   position: absolute;
   height: 100%;
-  background: linear-gradient(90deg, #5fa8ff, #7dc8b3);
+  background: #7a8a5a;
   border-radius: 2px;
 }
 
@@ -55,12 +55,12 @@
   display: block;
   width: 18px;
   height: 18px;
-  background: #dcecff;
+  background: #8fa06a;
   border-radius: 50%;
-  border: 3px solid #5fa8ff;
+  border: 3px solid #7a8a5a;
   outline: none;
   cursor: grab;
-  box-shadow: 0 0 0 4px rgba(95, 168, 255, 0.16);
+  box-shadow: 0 0 0 4px rgba(122, 138, 90, 0.16);
 }
 
 .gridContainer {
@@ -71,9 +71,9 @@
   justify-content: center;
   overflow: auto;
   padding: 10px;
-  background: rgba(16, 20, 31, 0.92);
-  border: 1px solid rgba(124, 157, 203, 0.14);
-  border-radius: 18px;
+  background: #1e1b14;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
 }
 
 .axisFrame {
@@ -88,7 +88,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #7f8ba8;
+  color: #8a7d6a;
   font-size: 10px;
   font-variant-numeric: tabular-nums;
 }
@@ -96,7 +96,7 @@
 .corner {
   width: 100%;
   height: 100%;
-  color: #95a2c2;
+  color: #7a8a5a;
   font-size: 9px;
   letter-spacing: 0.08em;
 }
@@ -104,7 +104,7 @@
 .grid {
   display: grid;
   gap: 0;
-  border: 1px solid #202a40;
+  border: 1px solid #261f16;
 }
 
 .cell {
@@ -113,7 +113,7 @@
 }
 
 .empty {
-  color: #6f7c9b;
+  color: #5c4a32;
   font-size: 12px;
 }
 
@@ -127,18 +127,19 @@
   flex: 1;
   min-height: 42px;
   padding: 6px 12px;
-  background: #1a2335;
-  border: 1px solid rgba(124, 157, 203, 0.18);
-  border-radius: 12px;
-  color: #d5ddf0;
+  background: #261f16;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
+  color: #c8b89a;
+  font-family: 'Fraunces', Georgia, serif;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
+  transition: background 140ms ease;
 }
 
 .navBtn:hover:not(:disabled) {
-  background: #22304a;
-  border-color: rgba(124, 157, 203, 0.32);
+  background: #3a3025;
 }
 
 .navBtn:disabled {
