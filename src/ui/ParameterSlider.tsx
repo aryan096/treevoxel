@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import * as Slider from '@radix-ui/react-slider';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import type { ParameterDef } from '../core/types';
@@ -15,13 +16,48 @@ type Props = {
 };
 
 export default function ParameterSlider({ param, value, onChange, action }: Props) {
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const [touchTooltipOpen, setTouchTooltipOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+
+    const mediaQuery = window.matchMedia('(hover: none), (pointer: coarse)');
+    const updateTouchMode = () => {
+      const isTouch = mediaQuery.matches;
+      setIsTouchDevice(isTouch);
+      if (!isTouch) {
+        setTouchTooltipOpen(false);
+      }
+    };
+
+    updateTouchMode();
+    mediaQuery.addEventListener('change', updateTouchMode);
+    return () => mediaQuery.removeEventListener('change', updateTouchMode);
+  }, []);
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <Tooltip.Provider delayDuration={300}>
-          <Tooltip.Root>
+          <Tooltip.Root
+            open={isTouchDevice ? touchTooltipOpen : undefined}
+            onOpenChange={isTouchDevice ? setTouchTooltipOpen : undefined}
+          >
             <Tooltip.Trigger asChild>
-              <label className={styles.label}>{param.label}</label>
+              <button
+                type="button"
+                className={styles.labelButton}
+                aria-label={`Show details for ${param.label}`}
+                aria-expanded={isTouchDevice ? touchTooltipOpen : undefined}
+                onClick={
+                  isTouchDevice
+                    ? () => setTouchTooltipOpen((open) => !open)
+                    : undefined
+                }
+              >
+                <span className={styles.label}>{param.label}</span>
+              </button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content className={styles.tooltip} side="left" sideOffset={8}>
