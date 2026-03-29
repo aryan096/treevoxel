@@ -15,28 +15,28 @@
 .title {
   font-size: 18px;
   font-weight: 700;
-  color: #eef4ff;
+  color: #c8b89a;
 }
 
 .copy {
   margin: 0;
-  color: #a9b7d6;
+  color: #8a7d6a;
   font-size: 13px;
   line-height: 1.6;
 }
 
 .copy code {
-  color: #eef4ff;
+  color: #c8b89a;
   font-family: inherit;
 }
 
 .inlineLink {
-  color: #9dccff;
+  color: #7a8a5a;
   text-decoration: none;
 }
 
 .inlineLink:hover {
-  color: #d8ecff;
+  color: #8fa06a;
   text-decoration: underline;
 }
 
@@ -44,18 +44,18 @@
   display: grid;
   gap: 12px;
   padding: 14px;
-  border: 1px solid rgba(124, 157, 203, 0.16);
-  border-radius: 16px;
-  background: rgba(17, 22, 34, 0.76);
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
+  background: #1e1b14;
 }
 
 .sectionTitle {
   margin: 0;
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #dce4f7;
+  color: #7a8a5a;
 }
 
 .referenceList {
@@ -66,17 +66,17 @@
 }
 
 .referenceItem {
-  color: #a9b7d6;
+  color: #8a7d6a;
   font-size: 13px;
   line-height: 1.5;
 }
 
 .referenceLink {
-  color: #9dccff;
+  color: #7a8a5a;
   text-decoration: none;
 }
 
 .referenceLink:hover {
-  color: #d8ecff;
+  color: #8fa06a;
   text-decoration: underline;
 }
