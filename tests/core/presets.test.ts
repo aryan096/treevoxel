@@ -32,7 +32,8 @@ describe('presets', () => {
     const spruce = PRESETS.find(p => p.id === 'spruce')!;
     const result = applyPreset(defaults, spruce);
     expect(result.crownShape).toBe('conical');
-    expect(result.randomSeed).toBe(defaults.randomSeed);
+    expect(result.randomSeed).toBe(spruce.params.randomSeed);
+    expect(result.height).toBe(spruce.params.height);
   });
 
   it('applyPreset returns a new object, does not mutate input', () => {
@@ -55,5 +56,23 @@ describe('presets', () => {
 
     expect(result).toEqual(willow.blockColors);
     expect(baseColors).toEqual(original);
+  });
+
+  it('preserves distinct silhouette families across presets', () => {
+    const spruce = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'spruce')!);
+    const oak = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'oak')!);
+    const willow = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'willow')!);
+    const cypress = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'italian-cypress')!);
+    const baobab = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'baobab')!);
+    const joshua = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'joshua-tree')!);
+
+    expect(spruce.crownWidth).toBeLessThan(oak.crownWidth);
+    expect(cypress.crownWidth).toBeLessThan(spruce.crownWidth);
+    expect(willow.branchDroop).toBeGreaterThan(oak.branchDroop);
+    expect(baobab.trunkBaseRadius).toBeGreaterThan(oak.trunkBaseRadius);
+    expect(baobab.crownFullness).toBeLessThan(oak.crownFullness);
+    expect(joshua.interiorLeafPruning).toBeGreaterThan(willow.interiorLeafPruning);
+    expect(spruce.randomSeed).not.toBe(oak.randomSeed);
+    expect(cypress.randomSeed).not.toBe(willow.randomSeed);
   });
 });
