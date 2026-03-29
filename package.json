@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "start": "node server/community-server.mjs",
     "start:server": "node server/community-server.mjs",
     "test": "vitest run",
     "test:watch": "vitest"

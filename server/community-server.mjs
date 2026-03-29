@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -8,6 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, '..');
 const dataDir = path.join(projectRoot, 'data');
 const dataFile = path.join(dataDir, 'community-creations.json');
+const distDir = path.join(projectRoot, 'dist');
 const port = Number(process.env.PORT ?? 8787);
 const adminKeys = new Set(
   (process.env.TREEVOXEL_ADMIN_KEYS ?? process.env.TREEVOXEL_ADMIN_KEY ?? '')
@@ -238,6 +239,79 @@ function isAuthorized(request) {
   return typeof request.headers['x-admin-key'] === 'string' && adminKeys.has(request.headers['x-admin-key']);
 }
 
+function getStaticContentType(filePath) {
+  const extension = path.extname(filePath).toLowerCase();
+
+  switch (extension) {
+    case '.html':
+      return 'text/html; charset=utf-8';
+    case '.js':
+      return 'text/javascript; charset=utf-8';
+    case '.css':
+      return 'text/css; charset=utf-8';
+    case '.svg':
+      return 'image/svg+xml';
+    case '.json':
+      return 'application/json; charset=utf-8';
+    case '.ico':
+      return 'image/x-icon';
+    case '.png':
+      return 'image/png';
+    case '.jpg':
+    case '.jpeg':
+      return 'image/jpeg';
+    case '.webp':
+      return 'image/webp';
+    case '.txt':
+      return 'text/plain; charset=utf-8';
+    default:
+      return 'application/octet-stream';
+  }
+}
+
+async function tryServeStaticAsset(response, pathname) {
+  const normalizedPath = pathname === '/' ? '/index.html' : pathname;
+  const requestedPath = path.resolve(distDir, `.${normalizedPath}`);
+
+  if (!requestedPath.startsWith(distDir)) {
+    return false;
+  }
+
+  try {
+    const fileInfo = await stat(requestedPath);
+    if (!fileInfo.isFile()) {
+      return false;
+    }
+
+    const fileContents = await readFile(requestedPath);
+    response.writeHead(200, {
+      'Content-Type': getStaticContentType(requestedPath),
+      'Cache-Control': normalizedPath === '/index.html'
+        ? 'no-cache'
+        : 'public, max-age=31536000, immutable',
+    });
+    response.end(fileContents);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function serveFrontendApp(response) {
+  try {
+    const indexHtml = await readFile(path.join(distDir, 'index.html'));
+    response.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-cache',
+    });
+    response.end(indexHtml);
+  } catch {
+    json(response, 503, {
+      error: 'Frontend build is unavailable. Run `npm run build` before starting the production server.',
+    });
+  }
+}
+
 function serializeSubmission(submission) {
   return {
     id: submission.id,
@@ -343,6 +417,18 @@ const server = createServer(async (request, response) => {
 
       json(response, 200, { submission: serializeSubmission(target) });
       return;
+    }
+
+    if (request.method === 'GET' || request.method === 'HEAD') {
+      const servedAsset = await tryServeStaticAsset(response, url.pathname);
+      if (servedAsset) {
+        return;
+      }
+
+      if (!path.extname(url.pathname)) {
+        await serveFrontendApp(response);
+        return;
+      }
     }
 
     json(response, 404, { error: 'Not found.' });
