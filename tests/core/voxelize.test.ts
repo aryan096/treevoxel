@@ -119,6 +119,52 @@ describe('voxelize', () => {
     expect(countLeafBlocks(pruned)).toBeLessThan(countLeafBlocks(unpruned));
   });
 
+  it('removes detached multi-block leaf clumps during cleanup', () => {
+    const store = voxelize(
+      {
+        nodes: [
+          {
+            position: [0, 0, 0],
+            parentIndex: null,
+            order: 0,
+            radius: 1,
+            role: 'trunk',
+            length: 0,
+            direction: [0, 1, 0],
+          },
+        ],
+        leafClusters: [
+          {
+            center: [1, 0, 0],
+            radius: 0.1,
+            density: 1,
+          },
+          {
+            center: [4, 0, 0],
+            radius: 0.1,
+            density: 1,
+          },
+          {
+            center: [5, 0, 0],
+            radius: 0.1,
+            density: 1,
+          },
+        ],
+      },
+      {
+        ...params,
+        randomSeed: 99,
+        leafCleanup: 1,
+        interiorLeafPruning: 0,
+      },
+    );
+
+    const layer = store.layers.get(0);
+    expect(layer?.get(pack(1, 0))).toBe('leaf');
+    expect(layer?.get(pack(4, 0))).toBeUndefined();
+    expect(layer?.get(pack(5, 0))).toBeUndefined();
+  });
+
   it('preset trees retain some full-block branch voxels instead of only fences', () => {
     const presetIds = new Set(['spruce', 'oak', 'mangrove']);
 

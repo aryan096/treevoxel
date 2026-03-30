@@ -1,5 +1,5 @@
 import type { Axis, BlockType, BranchSpan, TreeModel, TreeParams, VoxelStore } from './types';
-import { GRID_SIZE, pack, unpack } from './pack';
+import { pack, unpack } from './pack';
 import { buildBranchSegments } from './branchSegments';
 import { classifyBranchSpans } from './branchRepresentation';
 import { buildFenceAttachmentMask, repairFenceAttachments } from './fenceAttachment';
@@ -153,21 +153,18 @@ export function voxelize(model: TreeModel, params: TreeParams): VoxelStore {
 
   if (params.leafCleanup > 0) {
     const toRemove: Array<{ y: number; key: number }> = [];
+    const visited = new Set<string>();
 
     for (const [y, layer] of layers) {
       for (const [key, type] of layer) {
         if (type !== 'leaf') continue;
 
-        let neighbors = 0;
-        if (layer.has(key + 1)) neighbors++;
-        if (layer.has(key - 1)) neighbors++;
-        if (layer.has(key + GRID_SIZE)) neighbors++;
-        if (layer.has(key - GRID_SIZE)) neighbors++;
-        if (layers.get(y + 1)?.has(key)) neighbors++;
-        if (layers.get(y - 1)?.has(key)) neighbors++;
+        const leafId = makeLeafId(y, key);
+        if (visited.has(leafId)) continue;
 
-        if (neighbors < 1 && rng() < params.leafCleanup) {
-          toRemove.push({ y, key });
+        const component = collectLeafComponent(layers, y, key, visited);
+        if (!component.touchesWood && rng() < params.leafCleanup) {
+          toRemove.push(...component.voxels);
         }
       }
     }
@@ -236,6 +233,65 @@ function countExposedFaces(
   if (!layers.get(y - 1)?.has(pack(x, z))) exposed++;
 
   return exposed;
+}
+
+function collectLeafComponent(
+  layers: Map<number, Map<number, BlockType>>,
+  startY: number,
+  startKey: number,
+  visited: Set<string>,
+): {
+  voxels: Array<{ y: number; key: number }>;
+  touchesWood: boolean;
+} {
+  const voxels: Array<{ y: number; key: number }> = [];
+  const queue: Array<{ y: number; key: number }> = [{ y: startY, key: startKey }];
+  visited.add(makeLeafId(startY, startKey));
+  let touchesWood = false;
+
+  for (let i = 0; i < queue.length; i++) {
+    const voxel = queue[i];
+    voxels.push(voxel);
+    const [x, z] = unpack(voxel.key);
+
+    for (const neighbor of getOrthogonalNeighbors(x, voxel.y, z)) {
+      const neighborType = layers.get(neighbor.y)?.get(neighbor.key);
+      if (!neighborType) continue;
+
+      if (neighborType === 'log' || neighborType === 'branch' || neighborType === 'fence') {
+        touchesWood = true;
+        continue;
+      }
+
+      if (neighborType !== 'leaf') continue;
+
+      const neighborId = makeLeafId(neighbor.y, neighbor.key);
+      if (visited.has(neighborId)) continue;
+      visited.add(neighborId);
+      queue.push(neighbor);
+    }
+  }
+
+  return { voxels, touchesWood };
+}
+
+function getOrthogonalNeighbors(
+  x: number,
+  y: number,
+  z: number,
+): Array<{ y: number; key: number }> {
+  return [
+    { y, key: pack(x + 1, z) },
+    { y, key: pack(x - 1, z) },
+    { y, key: pack(x, z + 1) },
+    { y, key: pack(x, z - 1) },
+    { y: y + 1, key: pack(x, z) },
+    { y: y - 1, key: pack(x, z) },
+  ];
+}
+
+function makeLeafId(y: number, key: number): string {
+  return `${y}:${key}`;
 }
 
 function dominantAxis(dx: number, dy: number, dz: number): Axis {
