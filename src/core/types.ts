@@ -1,9 +1,12 @@
 // --- Block Types ---
-export type BlockType = 'log' | 'branch' | 'leaf';
+export type BlockType = 'log' | 'branch' | 'leaf' | 'fence';
+export type Axis = 'x' | 'y' | 'z';
 
 // --- Voxel Storage ---
 export type VoxelStore = {
   layers: Map<number, Map<number, BlockType>>;
+  axis: Map<number, Map<number, Axis>>;
+  fenceConnectivity: Map<number, Map<number, number>>;
   bounds: {
     minX: number; maxX: number;
     minY: number; maxY: number;
@@ -17,14 +20,28 @@ export type RenderBuffer = {
   types: Uint8Array;
   colors: Float32Array;
   count: number;
+  fencePostMatrices: Float32Array;
+  fencePostColors: Float32Array;
+  fencePostCount: number;
+  fenceArmMatrices: Float32Array;
+  fenceArmColors: Float32Array;
+  fenceArmCount: number;
 };
 
 export type BlockColors = Record<BlockType, string>;
+export type MinecraftBlockId = string;
+export type MinecraftPalette = {
+  log: MinecraftBlockId;
+  branch: MinecraftBlockId;
+  fence: MinecraftBlockId;
+  leaf: MinecraftBlockId;
+};
 
 export type TreeSnapshot = {
   presetId: PresetId;
   params: TreeParams;
   blockColors: BlockColors;
+  minecraftPalette: MinecraftPalette;
 };
 
 // --- Skeleton ---
@@ -40,8 +57,38 @@ export type SkeletonNode = {
   direction: [number, number, number];
 };
 
+export type BranchSegment = {
+  id: number;
+  parentSegmentId: number | null;
+  fromNodeIndex: number;
+  toNodeIndex: number;
+  from: [number, number, number];
+  to: [number, number, number];
+  order: number;
+  role: BranchRole;
+  radiusFrom: number;
+  radiusTo: number;
+  length: number;
+  direction: [number, number, number];
+};
+
+export type BranchSpanMaterial = 'log' | 'branch' | 'fence';
+
+export type BranchSpan = {
+  id: string;
+  segmentId: number;
+  parentSegmentId: number | null;
+  material: BranchSpanMaterial;
+  from: [number, number, number];
+  to: [number, number, number];
+  radiusFrom: number;
+  radiusTo: number;
+};
+
 export type TreeModel = {
   nodes: SkeletonNode[];
+  segments?: BranchSegment[];
+  spans?: BranchSpan[];
   leafClusters: LeafCluster[];
 };
 
@@ -128,11 +175,7 @@ export type TreeParams = {
 export type PresetId =
   | 'spruce'
   | 'oak'
-  | 'willow'
-  | 'italian-cypress'
-  | 'baobab'
-  | 'monkey-puzzle'
-  | 'joshua-tree';
+  | 'willow';
 
 export type Preset = {
   id: PresetId;
@@ -141,4 +184,5 @@ export type Preset = {
   growthForm: string;
   params: Partial<TreeParams>;
   blockColors: BlockColors;
+  minecraftPalette?: MinecraftPalette;
 };

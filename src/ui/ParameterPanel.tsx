@@ -1,9 +1,10 @@
 import type { CSSProperties } from 'react';
 import * as Select from '@radix-ui/react-select';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
-import type { BlockType, ParameterDef } from '../core/types';
+import type { MinecraftPalette, ParameterDef } from '../core/types';
 import { PARAMETER_DEFS, CATEGORICAL_PARAMS } from '../core/parameters';
-import { exportJSON, exportTextGuide } from '../core/export';
+import { exportJSON, exportTextGuide, exportLitematic } from '../core/export';
+import { getPresetsForCategory } from '../core/minecraftBlocks';
 import { useTreeStore } from '../store/treeStore';
 import PresetSelector from './PresetSelector';
 import ParameterGroup from './ParameterGroup';
@@ -12,7 +13,9 @@ import styles from './ParameterPanel.module.css';
 
 const GROUP_ORDER = ['dimensions', 'trunk', 'branching', 'crown', 'environment'];
 const FEATURED_PARAM_IDS = ['colorRandomness', 'randomSeed'] as const;
-const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
+const MC_BLOCK_TYPES = ['log', 'branch', 'leaf'] as const;
+type McBlockType = (typeof MC_BLOCK_TYPES)[number];
+const BLOCK_TYPE_LABELS: Record<McBlockType, string> = {
   log: 'Log',
   branch: 'Branch',
   leaf: 'Leaf',
@@ -21,6 +24,13 @@ const SCROLLBAR_WIDTH = 7;
 
 function formatOptionLabel(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function formatBlockLabel(value: string): string {
+  return value
+    .split('_')
+    .map((part) => formatOptionLabel(part))
+    .join(' ');
 }
 
 function downloadFile(content: string, filename: string, mime: string): void {
@@ -39,7 +49,9 @@ export default function ParameterPanel() {
   const randomizeSeed = useTreeStore((s) => s.randomizeSeed);
   const voxels = useTreeStore((s) => s.voxels);
   const blockColors = useTreeStore((s) => s.blockColors);
+  const minecraftPalette = useTreeStore((s) => s.minecraftPalette);
   const setBlockColor = useTreeStore((s) => s.setBlockColor);
+  const setMinecraftPaletteEntry = useTreeStore((s) => s.setMinecraftPaletteEntry);
 
   const grouped = new Map<string, typeof PARAMETER_DEFS>();
   for (const p of PARAMETER_DEFS) {
@@ -59,6 +71,17 @@ export default function ParameterPanel() {
     downloadFile(exportTextGuide(voxels), 'treevoxel-build-guide.txt', 'text/plain');
   };
 
+  const handleExportLitematic = () => {
+    const data = exportLitematic(voxels, minecraftPalette);
+    const blob = new Blob([data], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'treevoxel-export.litematic';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <ScrollArea.Root
       className={styles.root}
@@ -74,21 +97,88 @@ export default function ParameterPanel() {
               <span className={styles.colorSectionCount}>3</span>
             </div>
             <div className={styles.colorGrid}>
-              {(Object.keys(BLOCK_TYPE_LABELS) as BlockType[]).map((type) => (
-                <label key={type} className={styles.colorField}>
-                  <span className={styles.colorLabel}>{BLOCK_TYPE_LABELS[type]}</span>
-                  <div className={styles.colorControl}>
-                    <input
-                      className={styles.colorInput}
-                      type="color"
-                      value={blockColors[type]}
-                      aria-label={`${BLOCK_TYPE_LABELS[type]} color`}
-                      onChange={(event) => setBlockColor(type, event.target.value)}
-                    />
-                    <span className={styles.colorValue}>{blockColors[type].toUpperCase()}</span>
+              {MC_BLOCK_TYPES.map((type) => {
+                const paletteKey = type as keyof MinecraftPalette;
+                const mcPresets = getPresetsForCategory(type);
+                return (
+                  <div key={type} className={styles.colorField}>
+                    <span className={styles.colorLabel}>{BLOCK_TYPE_LABELS[type]}</span>
+                    <Select.Root
+                      value={minecraftPalette[paletteKey]}
+                      onValueChange={(blockId) => {
+                        const preset = mcPresets.find((item) => item.id === blockId);
+                        if (preset) {
+                          setMinecraftPaletteEntry(paletteKey, blockId, preset.approximateHex);
+                        }
+                      }}
+                    >
+                      <Select.Trigger className={styles.mcBlockTrigger}>
+                        <Select.Value />
+                        <Select.Icon>{'\u25bc'}</Select.Icon>
+                      </Select.Trigger>
+                      <Select.Portal>
+                        <Select.Content className={styles.mcBlockContent} position="popper" sideOffset={4}>
+                          <Select.Viewport>
+                            {mcPresets.map((preset) => (
+                              <Select.Item key={preset.id} value={preset.id} className={styles.mcBlockItem}>
+                                <span
+                                  className={styles.mcBlockSwatch}
+                                  style={{ backgroundColor: preset.approximateHex }}
+                                />
+                                <Select.ItemText>{formatBlockLabel(preset.label)}</Select.ItemText>
+                              </Select.Item>
+                            ))}
+                          </Select.Viewport>
+                        </Select.Content>
+                      </Select.Portal>
+                    </Select.Root>
+                    <div className={styles.colorControl}>
+                      <input
+                        className={styles.colorInput}
+                        type="color"
+                        value={blockColors[type]}
+                        aria-label={`${BLOCK_TYPE_LABELS[type]} color`}
+                        onChange={(event) => setBlockColor(type, event.target.value)}
+                      />
+                      <span className={styles.colorValue}>{blockColors[type].toUpperCase()}</span>
+                    </div>
+                    {type === 'branch' ? (
+                      <details className={styles.branchDetails}>
+                        <summary className={styles.branchDetailsSummary}>Branch details</summary>
+                        <div className={styles.fenceRow}>
+                          <span className={styles.colorLabel}>Fence block</span>
+                          <Select.Root
+                            value={minecraftPalette.fence}
+                            onValueChange={(blockId) => {
+                              setMinecraftPaletteEntry('fence', blockId, '');
+                            }}
+                          >
+                            <Select.Trigger className={styles.mcBlockTrigger}>
+                              <Select.Value />
+                              <Select.Icon>{'\u25bc'}</Select.Icon>
+                            </Select.Trigger>
+                            <Select.Portal>
+                              <Select.Content className={styles.mcBlockContent} position="popper" sideOffset={4}>
+                                <Select.Viewport>
+                                  {getPresetsForCategory('fence').map((preset) => (
+                                    <Select.Item key={preset.id} value={preset.id} className={styles.mcBlockItem}>
+                                      <span
+                                        className={styles.mcBlockSwatch}
+                                        style={{ backgroundColor: preset.approximateHex }}
+                                      />
+                                      <Select.ItemText>{formatBlockLabel(preset.label)}</Select.ItemText>
+                                    </Select.Item>
+                                  ))}
+                                </Select.Viewport>
+                              </Select.Content>
+                            </Select.Portal>
+                          </Select.Root>
+                        </div>
+                      </details>
+                    ) : null}
                   </div>
-                </label>
-              ))}
+                );
+              })}
             </div>
           </section>
 
@@ -165,6 +255,9 @@ export default function ParameterPanel() {
               </button>
               <button type="button" className={styles.exportButton} onClick={handleExportText}>
                 Build Guide
+              </button>
+              <button type="button" className={styles.exportButton} onClick={handleExportLitematic}>
+                Litematica (.litematic)
               </button>
             </div>
           </section>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useState } from 'react';
 import * as Slider from '@radix-ui/react-slider';
 import * as Tooltip from '@radix-ui/react-tooltip';
 import type { ParameterDef } from '../core/types';
@@ -15,9 +15,10 @@ type Props = {
   };
 };
 
-export default function ParameterSlider({ param, value, onChange, action }: Props) {
+function ParameterSlider({ param, value, onChange, action }: Props) {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [touchTooltipOpen, setTouchTooltipOpen] = useState(false);
+  const [draftValue, setDraftValue] = useState(value);
 
   useEffect(() => {
     if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
@@ -35,6 +36,10 @@ export default function ParameterSlider({ param, value, onChange, action }: Prop
     mediaQuery.addEventListener('change', updateTouchMode);
     return () => mediaQuery.removeEventListener('change', updateTouchMode);
   }, []);
+
+  useEffect(() => {
+    setDraftValue(value);
+  }, [value]);
 
   return (
     <div className={styles.container}>
@@ -73,7 +78,9 @@ export default function ParameterSlider({ param, value, onChange, action }: Prop
             </Tooltip.Portal>
           </Tooltip.Root>
         </Tooltip.Provider>
-        <span className={styles.value}>{Number.isInteger(param.step) ? value : value.toFixed(2)}</span>
+        <span className={styles.value}>
+          {Number.isInteger(param.step) ? draftValue : draftValue.toFixed(2)}
+        </span>
       </div>
       <div className={styles.controlRow}>
         <Slider.Root
@@ -81,8 +88,14 @@ export default function ParameterSlider({ param, value, onChange, action }: Prop
           min={param.min}
           max={param.max}
           step={param.step}
-          value={[value]}
-          onValueChange={([v]) => onChange(v)}
+          value={[draftValue]}
+          onValueChange={([v]) => setDraftValue(v)}
+          onValueCommit={([v]) => {
+            setDraftValue(v);
+            if (v !== value) {
+              onChange(v);
+            }
+          }}
         >
           <Slider.Track className={styles.track}>
             <Slider.Range className={styles.range} />
@@ -99,3 +112,5 @@ export default function ParameterSlider({ param, value, onChange, action }: Prop
     </div>
   );
 }
+
+export default memo(ParameterSlider);

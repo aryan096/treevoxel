@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import styles from './App.module.css';
 import VoxelScene from './render/VoxelScene';
 import ParameterPanel from './ui/ParameterPanel';
-import LayerBrowser from './ui/LayerBrowser';
 import Toolbar from './ui/Toolbar';
-import AboutPanel from './ui/AboutPanel';
-import CommunityPanel from './ui/CommunityPanel';
 import ViewportLegend from './ui/ViewportLegend';
 import { useTreeStore } from './store/treeStore';
+
+const LayerBrowser = lazy(() => import('./ui/LayerBrowser'));
+const CommunityPanel = lazy(() => import('./ui/CommunityPanel'));
+const AboutPanel = lazy(() => import('./ui/AboutPanel'));
 
 export default function App() {
   const voxels = useTreeStore((s) => s.voxels);
@@ -33,6 +34,8 @@ export default function App() {
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [voxels, activeLayer, setActiveLayer]);
+
+  const lazyPanelFallback = <div className={styles.settingsPanel}>Loading panel...</div>;
 
   return (
     <div className={styles.layout}>
@@ -78,17 +81,23 @@ export default function App() {
               <ParameterPanel />
             </div>
           ) : activeTab === 'layers' ? (
-            <div className={styles.layersPanel} role="tabpanel" aria-label="Layers">
-              <LayerBrowser />
-            </div>
+            <Suspense fallback={lazyPanelFallback}>
+              <div className={styles.layersPanel} role="tabpanel" aria-label="Layers">
+                <LayerBrowser />
+              </div>
+            </Suspense>
           ) : activeTab === 'community' ? (
-            <div className={styles.communityPanel} role="tabpanel" aria-label="Community">
-              <CommunityPanel />
-            </div>
+            <Suspense fallback={lazyPanelFallback}>
+              <div className={styles.communityPanel} role="tabpanel" aria-label="Community">
+                <CommunityPanel />
+              </div>
+            </Suspense>
           ) : (
-            <div className={styles.aboutPanel} role="tabpanel" aria-label="About">
-              <AboutPanel />
-            </div>
+            <Suspense fallback={lazyPanelFallback}>
+              <div className={styles.aboutPanel} role="tabpanel" aria-label="About">
+                <AboutPanel />
+              </div>
+            </Suspense>
           )}
         </div>
       </aside>

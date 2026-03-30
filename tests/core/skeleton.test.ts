@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { generateSkeleton } from '../../src/core/skeleton';
 import { getDefaultParams } from '../../src/core/parameters';
+import { PRESETS, applyPreset } from '../../src/core/presets';
 
 describe('generateSkeleton', () => {
   const params = getDefaultParams();
@@ -64,6 +65,13 @@ describe('generateSkeleton', () => {
        n.position[2] !== b[i].position[2])
     );
     expect(differs).toBe(true);
+  });
+
+  it('skeleton geometry is independent of minBranchThickness', () => {
+    const thinThreshold = generateSkeleton({ ...params, randomSeed: 77, minBranchThickness: 1 });
+    const thickThreshold = generateSkeleton({ ...params, randomSeed: 77, minBranchThickness: 3 });
+
+    expect(thinThreshold).toEqual(thickThreshold);
   });
 
   it('trunk noise deforms the trunk centerline laterally', () => {
@@ -131,5 +139,49 @@ describe('generateSkeleton', () => {
       weepingTips.reduce((sum, node) => sum + node.direction[1], 0) / weepingTips.length;
 
     expect(weepingAvgDirectionY).toBeLessThan(uprightAvgDirectionY);
+  });
+
+  it('sub-branches can spawn from interior scaffold nodes instead of only branch tips', () => {
+    const distributed = generateSkeleton({
+      ...params,
+      randomSeed: 901,
+      branchOrderDepth: 3,
+      branchDensity: 1,
+      branchLengthRatio: 1,
+    });
+
+    const childCount = new Map<number, number>();
+    for (const node of distributed) {
+      if (node.parentIndex !== null) {
+        childCount.set(node.parentIndex, (childCount.get(node.parentIndex) ?? 0) + 1);
+      }
+    }
+
+    const secondaryParents = distributed
+      .filter((node) => node.role === 'secondary')
+      .map((node) => node.parentIndex)
+      .filter((parentIndex): parentIndex is number => parentIndex !== null);
+
+    expect(secondaryParents.length).toBeGreaterThan(0);
+    expect(
+      secondaryParents.some((parentIndex) => (childCount.get(parentIndex) ?? 0) > 1),
+    ).toBe(true);
+  });
+
+  it('preset crowns attach scaffold branches to the top trunk node', () => {
+    for (const presetId of ['spruce', 'oak'] as const) {
+      const preset = PRESETS.find((entry) => entry.id === presetId)!;
+      const nodes = generateSkeleton(applyPreset(getDefaultParams(), preset));
+      const trunkIndices = nodes
+        .map((node, index) => ({ node, index }))
+        .filter(({ node }) => node.role === 'trunk')
+        .map(({ index }) => index);
+      const topTrunkIndex = trunkIndices.at(-1)!;
+      const topChildren = nodes.filter(
+        (node) => node.parentIndex === topTrunkIndex && node.role === 'scaffold',
+      );
+
+      expect(topChildren.length).toBeGreaterThanOrEqual(2);
+    }
   });
 });

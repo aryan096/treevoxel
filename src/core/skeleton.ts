@@ -137,10 +137,9 @@ export function generateSkeleton(params: TreeParams): SkeletonNode[] {
   }
 
   const branchCount = Math.round(params.primaryBranchCount * params.branchDensity);
-  const spacing = Math.max(1, Math.floor(eligibleTrunkIndices.length / Math.max(1, branchCount)));
+  const scaffoldAttachmentIndices = selectScaffoldAttachmentIndices(eligibleTrunkIndices, branchCount);
 
-  for (let b = 0; b < branchCount && b * spacing < eligibleTrunkIndices.length; b++) {
-    const trunkIdx = eligibleTrunkIndices[Math.min(b * spacing, eligibleTrunkIndices.length - 1)];
+  for (const trunkIdx of scaffoldAttachmentIndices) {
     const trunkNode = nodes[trunkIdx];
 
     const azimuth = rng() * Math.PI * 2;
@@ -155,11 +154,13 @@ export function generateSkeleton(params: TreeParams): SkeletonNode[] {
     ]);
 
     const heightFraction = (trunkNode.position[1] - crownBottomY) / Math.max(1, crownTopY - crownBottomY);
-    const apicalFactor = 1 - params.apicalDominance * heightFraction;
+    const apicalFactor = getApicalFactor(heightFraction, params);
     const branchLength = params.crownWidth * 0.5 * params.branchLengthRatio * apicalFactor;
 
     addBranch(nodes, trunkIdx, dir, branchLength, 1, 'scaffold', params, rng);
   }
+
+  addTerminalCrownBranches(nodes, eligibleTrunkIndices, params, rng);
 
   return nodes;
 }
@@ -179,6 +180,9 @@ function addBranch(
   const parent = nodes[parentIdx];
   const segmentCount = Math.max(1, Math.round(length));
   const weepingFactor = params.crownShape === 'weeping' ? 1.85 : 1;
+  const branchNodeIndices: number[] = [];
+  const baseRadius = getBranchBaseRadius(parent.radius, order);
+  const branchTaper = getBranchTaper(order);
 
   let currentIdx = parentIdx;
   let currentDir = direction;
@@ -196,8 +200,8 @@ function addBranch(
     const stepLength = length / segmentCount;
     const position = vec3Add(nodes[currentIdx].position, vec3Scale(droopedDir, stepLength));
     const radius = Math.max(
-      params.minBranchThickness * 0.5,
-      parent.radius * (1 - t * 0.7) * (order === 1 ? 0.5 : 0.3)
+      0.18,
+      baseRadius * (1 - t * branchTaper),
     );
 
     const nodeIdx = nodes.length;
@@ -210,28 +214,139 @@ function addBranch(
       length: stepLength,
       direction: droopedDir,
     });
+    branchNodeIndices.push(nodeIdx);
     currentIdx = nodeIdx;
     currentDir = droopedDir;
   }
 
   // Recurse for sub-branches
-  if (order < params.branchOrderDepth) {
+  if (order < params.branchOrderDepth && branchNodeIndices.length > 0) {
     const subCount = Math.round(2 * params.branchDensity);
-    const tipIdx = nodes.length - 1;
     for (let i = 0; i < subCount; i++) {
+      const attachmentNodeIdx = sampleAttachmentNode(branchNodeIndices, rng);
+      const attachmentNode = nodes[attachmentNodeIdx];
+      const parentDirection = attachmentNode.direction;
       const azimuth = rng() * Math.PI * 2;
       const angle = (params.branchAngle * 0.8 + (rng() - 0.5) * params.branchAngleVariance) * Math.PI / 180;
       const sinA = Math.sin(angle);
       const cosA = Math.cos(angle);
       const descendantDroop = params.branchDroop * (params.crownShape === 'weeping' ? 0.32 : 0.1);
       const subDir: Vec3 = vec3Normalize([
-        currentDir[0] * cosA + sinA * Math.cos(azimuth),
-        currentDir[1] * cosA - descendantDroop,
-        currentDir[2] * cosA + sinA * Math.sin(azimuth),
+        parentDirection[0] * cosA + sinA * Math.cos(azimuth),
+        parentDirection[1] * cosA - descendantDroop,
+        parentDirection[2] * cosA + sinA * Math.sin(azimuth),
       ]);
-      const subLength = length * 0.5;
+      const subLength = length * (0.4 + rng() * 0.18);
       const subRole = order + 1 >= params.branchOrderDepth ? 'twig' : 'secondary';
-      addBranch(nodes, tipIdx, subDir, subLength, order + 1, subRole, params, rng);
+      addBranch(nodes, attachmentNodeIdx, subDir, subLength, order + 1, subRole, params, rng);
     }
+  }
+}
+
+function sampleAttachmentNode(
+  branchNodeIndices: number[],
+  rng: () => number,
+): number {
+  if (branchNodeIndices.length === 1) {
+    return branchNodeIndices[0];
+  }
+
+  const minT = branchNodeIndices.length > 2 ? 0.35 : 0.5;
+  const maxT = 0.9;
+  const attachmentT = minT + (maxT - minT) * rng();
+  const scaledIndex = attachmentT * (branchNodeIndices.length - 1);
+  const lowerIndex = Math.floor(scaledIndex);
+  const upperIndex = Math.min(branchNodeIndices.length - 1, Math.ceil(scaledIndex));
+  const blend = scaledIndex - lowerIndex;
+
+  return blend < 0.5
+    ? branchNodeIndices[lowerIndex]
+    : branchNodeIndices[upperIndex];
+}
+
+function getBranchBaseRadius(
+  parentRadius: number,
+  order: number,
+): number {
+  if (order <= 1) {
+    const scaled = parentRadius * 0.8;
+    const visibleBase = Math.min(parentRadius * 0.97, 1.14);
+    return Math.max(scaled, visibleBase);
+  }
+
+  if (order === 2) {
+    return parentRadius * 0.6;
+  }
+
+  return parentRadius * Math.max(0.22, 0.42 - (order - 3) * 0.05);
+}
+
+function getBranchTaper(order: number): number {
+  if (order <= 1) return 0.24;
+  if (order === 2) return 0.42;
+  return Math.min(0.72, 0.56 + (order - 3) * 0.06);
+}
+
+function selectScaffoldAttachmentIndices(
+  eligibleTrunkIndices: number[],
+  branchCount: number,
+): number[] {
+  if (eligibleTrunkIndices.length === 0 || branchCount <= 0) {
+    return [];
+  }
+
+  if (branchCount === 1) {
+    return [eligibleTrunkIndices[eligibleTrunkIndices.length - 1]];
+  }
+
+  const selected = new Set<number>();
+  for (let b = 0; b < branchCount; b++) {
+    const t = b / (branchCount - 1);
+    const sampledIndex = Math.round(t * (eligibleTrunkIndices.length - 1));
+    selected.add(eligibleTrunkIndices[sampledIndex]);
+  }
+
+  return Array.from(selected).sort((a, b) => a - b);
+}
+
+function getApicalFactor(
+  heightFraction: number,
+  params: TreeParams,
+): number {
+  const unclampedFraction = 1 - params.apicalDominance * heightFraction;
+  const floor = 0.28 + params.branchDensity * 0.24;
+  return Math.max(floor, unclampedFraction);
+}
+
+function addTerminalCrownBranches(
+  nodes: SkeletonNode[],
+  eligibleTrunkIndices: number[],
+  params: TreeParams,
+  rng: () => number,
+): void {
+  if (eligibleTrunkIndices.length === 0) return;
+
+  const trunkIdx = eligibleTrunkIndices[eligibleTrunkIndices.length - 1];
+  const whorlCount = params.crownShape === 'conical' || params.crownShape === 'columnar' ? 4 : 3;
+  const startAzimuth = rng() * Math.PI * 2;
+  const terminalAngle = Math.max(18, params.branchAngle * 0.68);
+  const terminalLength = Math.max(
+    1.2,
+    params.crownWidth * (params.crownShape === 'conical' ? 0.22 : 0.18) * params.branchLengthRatio,
+  );
+
+  for (let i = 0; i < whorlCount; i++) {
+    const azimuth = startAzimuth + (i / whorlCount) * Math.PI * 2;
+    const angleVariance = (rng() - 0.5) * params.branchAngleVariance * 0.45;
+    const angle = (terminalAngle + angleVariance) * Math.PI / 180;
+    const sinA = Math.sin(angle);
+    const cosA = Math.cos(angle);
+    const dir: Vec3 = vec3Normalize([
+      sinA * Math.cos(azimuth),
+      cosA,
+      sinA * Math.sin(azimuth),
+    ]);
+
+    addBranch(nodes, trunkIdx, dir, terminalLength, 1, 'scaffold', params, rng);
   }
 }

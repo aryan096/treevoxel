@@ -13,18 +13,19 @@ export default function LayerHighlight() {
     invalidate();
   }, [activeLayer, invalidate, darkMode]);
 
-  if (voxels.layers.size === 0) return null;
-
-  const width = voxels.bounds.maxX - voxels.bounds.minX + 2;
-  const depth = voxels.bounds.maxZ - voxels.bounds.minZ + 2;
-  const centerX = (voxels.bounds.minX + voxels.bounds.maxX) / 2;
-  const centerZ = (voxels.bounds.minZ + voxels.bounds.maxZ) / 2;
+  const hasVoxels = voxels.layers.size > 0;
+  const width = hasVoxels ? voxels.bounds.maxX - voxels.bounds.minX + 2 : 1;
+  const depth = hasVoxels ? voxels.bounds.maxZ - voxels.bounds.minZ + 2 : 1;
+  const centerX = hasVoxels ? (voxels.bounds.minX + voxels.bounds.maxX) / 2 : 0;
+  const centerZ = hasVoxels ? (voxels.bounds.minZ + voxels.bounds.maxZ) / 2 : 0;
   const sliceColor = darkMode ? '#b78a52' : '#8f6538';
   const slabGeometry = useMemo(() => new THREE.BoxGeometry(width, 0.98, depth), [depth, width]);
   const slabEdges = useMemo(() => new THREE.EdgesGeometry(slabGeometry), [slabGeometry]);
 
+  if (!hasVoxels) return null;
+
   return (
-    <group position={[centerX, activeLayer, centerZ]}>
+    <group position={[centerX, activeLayer + 0.5, centerZ]}>
       <mesh renderOrder={2}>
         <primitive object={slabGeometry} attach="geometry" />
         <meshBasicMaterial

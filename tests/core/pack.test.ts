@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { pack, unpack, GRID_SIZE } from '../../src/core/pack';
+import { pack, unpack } from '../../src/core/pack';
 
 describe('pack', () => {
   it('packs x=0, z=0 to 0', () => {

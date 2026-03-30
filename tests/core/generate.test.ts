@@ -8,9 +8,20 @@ describe('generateTree', () => {
   it('produces a complete pipeline result', () => {
     const params = getDefaultParams();
     const result = generateTree(params);
+    let nonFenceCount = 0;
+    for (const layer of result.voxels.layers.values()) {
+      for (const type of layer.values()) {
+        if (type !== 'fence') {
+          nonFenceCount++;
+        }
+      }
+    }
+
     expect(result.model.nodes.length).toBeGreaterThan(0);
+    expect(result.model.segments?.length ?? 0).toBeGreaterThan(0);
+    expect(result.model.spans?.length ?? 0).toBeGreaterThan(0);
     expect(result.voxels.count).toBeGreaterThan(0);
-    expect(result.buffer.count).toBe(result.voxels.count);
+    expect(result.buffer.count).toBe(nonFenceCount);
   });
 
   it('works with each preset', () => {

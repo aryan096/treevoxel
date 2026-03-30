@@ -9,6 +9,7 @@ const BLOCK_COLORS: Record<BlockType, string> = {
   log: '#6b4226',
   branch: '#8b6914',
   leaf: '#228b22',
+  fence: '#8b6914',
 };
 
 export default function LayerBrowser() {

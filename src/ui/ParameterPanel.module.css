@@ -57,6 +57,23 @@
   gap: 6px;
 }
 
+.branchDetails {
+  margin-top: 4px;
+}
+
+.branchDetailsSummary {
+  font-size: 11px;
+  color: var(--text-muted);
+  cursor: pointer;
+  user-select: none;
+}
+
+.fenceRow {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
 .colorLabel {
   font-size: 12px;
   color: var(--text-secondary);
@@ -100,6 +117,60 @@
   letter-spacing: 0.06em;
 }
 
+.mcBlockTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-height: 32px;
+  padding: 4px 10px;
+  background: #261f16;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 11px;
+  cursor: pointer;
+  width: 100%;
+  text-transform: none;
+}
+
+.mcBlockContent {
+  background: #261f16;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
+  padding: 4px;
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.mcBlockItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+  font-size: 11px;
+  color: var(--text-primary);
+}
+
+.mcBlockItem:hover,
+.mcBlockItem[data-highlighted] {
+  background: #3a3025;
+}
+
+.mcBlockSwatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid rgba(138, 125, 106, 0.3);
+  flex-shrink: 0;
+}
+
 .exportSection {
   display: grid;
   gap: 8px;
@@ -115,7 +186,7 @@
 
 .exportButtons {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
 

@@ -1,5 +1,10 @@
-import type { SkeletonNode, TreeParams, LeafCluster, CrownShape } from './types';
+import type { BranchSegment, SkeletonNode, TreeParams, LeafCluster, CrownShape } from './types';
 import { createRng } from './rng';
+
+type LeafAnchor = {
+  position: [number, number, number];
+  importance: number;
+};
 
 /**
  * Test if a point (x, y, z) is inside the crown envelope.
@@ -76,6 +81,7 @@ export function isInsideCrown(
 export function generateLeafClusters(
   skeleton: SkeletonNode[],
   params: TreeParams,
+  segments: BranchSegment[] = [],
 ): LeafCluster[] {
   const rng = createRng(params.randomSeed + 7919);
   const clusters: LeafCluster[] = [];
@@ -84,29 +90,23 @@ export function generateLeafClusters(
   const crownBottomY = params.height * (1 - params.crownDepth);
   const crownRadius = params.crownWidth / 2;
 
-  const isParent = new Set<number>();
-  for (const node of skeleton) {
-    if (node.parentIndex !== null) {
-      isParent.add(node.parentIndex);
-    }
-  }
+  const anchors = segments.length > 0
+    ? collectLeafAnchorsFromSegments(segments)
+    : collectLeafAnchorsFromNodes(skeleton);
 
-  for (let i = 0; i < skeleton.length; i++) {
-    const node = skeleton[i];
+  for (const anchor of anchors) {
+    const [x, y, z] = anchor.position;
+    const insideCrown = isInsideCrown(x, y, z, params.crownShape, crownBottomY, crownTopY, crownRadius);
 
-    const isTerminal = !isParent.has(i);
-    const isTwig = node.role === 'twig';
-    if (!isTerminal && !isTwig) continue;
-
-    const [x, y, z] = node.position;
-
-    if (!isInsideCrown(x, y, z, params.crownShape, crownBottomY, crownTopY, crownRadius)) {
-      if (rng() > 0.2) continue;
+    if (!insideCrown) {
+      const outsideAllowance = Math.min(0.42, 0.08 + anchor.importance * 0.28);
+      if (rng() > outsideAllowance) continue;
     }
 
-    if (rng() > params.leafDensity) continue;
+    const spawnChance = Math.min(1, params.leafDensity * (0.72 + anchor.importance * 0.4));
+    if (rng() > spawnChance) continue;
 
-    const clusterRadius = params.leafClusterRadius * (0.7 + rng() * 0.6);
+    const clusterRadius = params.leafClusterRadius * (0.72 + rng() * 0.55) * (0.84 + anchor.importance * 0.22);
     const weepingSag =
       params.crownShape === 'weeping'
         ? clusterRadius * (0.35 + rng() * 0.45) * (0.55 + params.branchDroop * 0.9)
@@ -115,7 +115,7 @@ export function generateLeafClusters(
     clusters.push({
       center: [x, y - weepingSag, z],
       radius: clusterRadius,
-      density: params.crownFullness,
+      density: Math.min(1, params.crownFullness * (0.92 + anchor.importance * 0.14)),
     });
   }
 
@@ -133,6 +133,92 @@ export function generateLeafClusters(
   }
 
   return clusters;
+}
+
+function collectLeafAnchorsFromSegments(
+  segments: BranchSegment[],
+): LeafAnchor[] {
+  const childCount = new Map<number, number>();
+  for (const segment of segments) {
+    if (segment.parentSegmentId !== null) {
+      childCount.set(segment.parentSegmentId, (childCount.get(segment.parentSegmentId) ?? 0) + 1);
+    }
+  }
+
+  const anchors: LeafAnchor[] = [];
+
+  for (const segment of segments) {
+    if (segment.role === 'trunk') continue;
+
+    const childSegments = childCount.get(segment.id) ?? 0;
+    const terminal = childSegments === 0;
+    const roleImportance = getRoleImportance(segment.role, terminal);
+
+    if (segment.role === 'twig' || terminal || segment.role === 'secondary') {
+      anchors.push({
+        position: segment.to,
+        importance: roleImportance,
+      });
+    }
+
+    if (segment.role !== 'scaffold') {
+      anchors.push({
+        position: interpolatePosition(segment.from, segment.to, terminal ? 0.68 : 0.78),
+        importance: Math.max(0.48, roleImportance - 0.14),
+      });
+    }
+  }
+
+  return anchors;
+}
+
+function collectLeafAnchorsFromNodes(
+  skeleton: SkeletonNode[],
+): LeafAnchor[] {
+  const childCount = new Map<number, number>();
+  for (const node of skeleton) {
+    if (node.parentIndex !== null) {
+      childCount.set(node.parentIndex, (childCount.get(node.parentIndex) ?? 0) + 1);
+    }
+  }
+
+  return skeleton
+    .filter((node, index) => {
+      const children = childCount.get(index) ?? 0;
+      return node.role === 'twig' || node.role === 'secondary' || (node.role !== 'trunk' && children === 0);
+    })
+    .map((node, index) => ({
+      position: node.position,
+      importance: getRoleImportance(node.role, (childCount.get(index) ?? 0) === 0),
+    }));
+}
+
+function interpolatePosition(
+  from: [number, number, number],
+  to: [number, number, number],
+  t: number,
+): [number, number, number] {
+  return [
+    from[0] + (to[0] - from[0]) * t,
+    from[1] + (to[1] - from[1]) * t,
+    from[2] + (to[2] - from[2]) * t,
+  ];
+}
+
+function getRoleImportance(
+  role: BranchSegment['role'] | SkeletonNode['role'],
+  terminal: boolean,
+): number {
+  switch (role) {
+    case 'twig':
+      return terminal ? 1 : 0.88;
+    case 'secondary':
+      return terminal ? 0.86 : 0.72;
+    case 'scaffold':
+      return terminal ? 0.7 : 0.54;
+    default:
+      return terminal ? 0.64 : 0.5;
+  }
 }
 
 function hash01(a: number, b: number, c: number): number {

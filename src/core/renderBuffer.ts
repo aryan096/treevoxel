@@ -1,7 +1,7 @@
 import type { VoxelStore, RenderBuffer, BlockType, BlockColors } from './types';
 import { unpack } from './pack';
 
-const BLOCK_TYPE_INDEX: Record<BlockType, number> = {
+const BLOCK_TYPE_INDEX: Record<Exclude<BlockType, 'fence'>, number> = {
   log: 0,
   branch: 1,
   leaf: 2,
@@ -11,6 +11,7 @@ const DEFAULT_BLOCK_COLORS: BlockColors = {
   log: '#6b4226',
   branch: '#8b6914',
   leaf: '#4d9a45',
+  fence: '#8b6914',
 };
 
 /**
@@ -19,48 +20,106 @@ const DEFAULT_BLOCK_COLORS: BlockColors = {
 export function buildRenderBuffer(
   store: VoxelStore,
   blockColors: BlockColors = DEFAULT_BLOCK_COLORS,
-  colorRandomness = 1,
+  colorRandomness = 0.1,
 ): RenderBuffer {
-  const { count } = store;
-  const matrices = new Float32Array(count * 16);
-  const types = new Uint8Array(count);
-  const colors = new Float32Array(count * 3);
+  let cubeCount = 0;
+  let fencePostCount = 0;
+  let fenceArmDirections = 0;
 
-  let idx = 0;
   for (const [y, layer] of store.layers) {
+    const connLayer = store.fenceConnectivity.get(y);
     for (const [key, blockType] of layer) {
-      const [x, z] = unpack(key);
-      const offset = idx * 16;
-
-      // 4x4 identity matrix with translation
-      matrices[offset + 0] = 1;
-      matrices[offset + 1] = 0;
-      matrices[offset + 2] = 0;
-      matrices[offset + 3] = 0;
-      matrices[offset + 4] = 0;
-      matrices[offset + 5] = 1;
-      matrices[offset + 6] = 0;
-      matrices[offset + 7] = 0;
-      matrices[offset + 8] = 0;
-      matrices[offset + 9] = 0;
-      matrices[offset + 10] = 1;
-      matrices[offset + 11] = 0;
-      matrices[offset + 12] = x;
-      matrices[offset + 13] = y;
-      matrices[offset + 14] = z;
-      matrices[offset + 15] = 1;
-
-      types[idx] = BLOCK_TYPE_INDEX[blockType];
-      const colorOffset = idx * 3;
-      const color = getVoxelColor(blockType, x, y, z, blockColors[blockType], colorRandomness);
-      colors[colorOffset + 0] = color[0];
-      colors[colorOffset + 1] = color[1];
-      colors[colorOffset + 2] = color[2];
-      idx++;
+      if (blockType === 'fence') {
+        fencePostCount++;
+        fenceArmDirections += countBits(connLayer?.get(key) ?? 0);
+      } else {
+        cubeCount++;
+      }
     }
   }
 
-  return { matrices, types, colors, count };
+  const matrices = new Float32Array(cubeCount * 16);
+  const types = new Uint8Array(cubeCount);
+  const colors = new Float32Array(cubeCount * 3);
+  const fencePostMatrices = new Float32Array(fencePostCount * 16);
+  const fencePostColors = new Float32Array(fencePostCount * 3);
+  const fenceArmCount = fenceArmDirections * 2;
+  const fenceArmMatrices = new Float32Array(fenceArmCount * 16);
+  const fenceArmColors = new Float32Array(fenceArmCount * 3);
+
+  let cubeIdx = 0;
+  let postIdx = 0;
+  let armIdx = 0;
+
+  for (const [y, layer] of store.layers) {
+    const connLayer = store.fenceConnectivity.get(y);
+    for (const [key, blockType] of layer) {
+      const [x, z] = unpack(key);
+
+      if (blockType === 'fence') {
+        writeMatrix(fencePostMatrices, postIdx * 16, 0.25, 1, 0.25, x, y + 0.5, z);
+        writeColor(
+          fencePostColors,
+          postIdx * 3,
+          getVoxelColor('branch', x, y, z, blockColors.branch, colorRandomness),
+        );
+        postIdx++;
+
+        const mask = connLayer?.get(key) ?? 0;
+        const directions: Array<{ dx: number; dz: number; bit: number }> = [
+          { dx: 0, dz: 1, bit: 0 },
+          { dx: 0, dz: -1, bit: 1 },
+          { dx: 1, dz: 0, bit: 2 },
+          { dx: -1, dz: 0, bit: 3 },
+        ];
+        const armHeights = [3 / 8, 3 / 4];
+
+        for (const direction of directions) {
+          if ((mask & (1 << direction.bit)) === 0) continue;
+
+          const sx = direction.dx === 0 ? 0.125 : 0.5;
+          const sz = direction.dz === 0 ? 0.125 : 0.5;
+          for (const height of armHeights) {
+            writeMatrix(
+              fenceArmMatrices,
+              armIdx * 16,
+              sx,
+              0.25,
+              sz,
+              x + direction.dx * 0.25,
+              y + height,
+              z + direction.dz * 0.25,
+            );
+            writeColor(
+              fenceArmColors,
+              armIdx * 3,
+              getVoxelColor('branch', x, y, z, blockColors.branch, colorRandomness),
+            );
+            armIdx++;
+          }
+        }
+        continue;
+      }
+
+      writeMatrix(matrices, cubeIdx * 16, 1, 1, 1, x, y + 0.5, z);
+      types[cubeIdx] = BLOCK_TYPE_INDEX[blockType];
+      writeColor(colors, cubeIdx * 3, getVoxelColor(blockType, x, y, z, blockColors[blockType], colorRandomness));
+      cubeIdx++;
+    }
+  }
+
+  return {
+    matrices,
+    types,
+    colors,
+    count: cubeCount,
+    fencePostMatrices,
+    fencePostColors,
+    fencePostCount,
+    fenceArmMatrices,
+    fenceArmColors,
+    fenceArmCount,
+  };
 }
 
 function getVoxelColor(
@@ -87,7 +146,7 @@ function getVoxelColor(
     });
   }
 
-  if (type === 'branch') {
+  if (type === 'branch' || type === 'fence') {
     return varyColor(baseColor, {
       x,
       y,
@@ -239,4 +298,46 @@ function hexToRgb(hex: string): [number, number, number] {
     ((value >> 8) & 255) / 255,
     (value & 255) / 255,
   ];
+}
+
+function writeMatrix(
+  target: Float32Array,
+  offset: number,
+  scaleX: number,
+  scaleY: number,
+  scaleZ: number,
+  translateX: number,
+  translateY: number,
+  translateZ: number,
+): void {
+  target[offset + 0] = scaleX;
+  target[offset + 1] = 0;
+  target[offset + 2] = 0;
+  target[offset + 3] = 0;
+  target[offset + 4] = 0;
+  target[offset + 5] = scaleY;
+  target[offset + 6] = 0;
+  target[offset + 7] = 0;
+  target[offset + 8] = 0;
+  target[offset + 9] = 0;
+  target[offset + 10] = scaleZ;
+  target[offset + 11] = 0;
+  target[offset + 12] = translateX;
+  target[offset + 13] = translateY;
+  target[offset + 14] = translateZ;
+  target[offset + 15] = 1;
+}
+
+function writeColor(target: Float32Array, offset: number, color: [number, number, number]): void {
+  target[offset + 0] = color[0];
+  target[offset + 1] = color[1];
+  target[offset + 2] = color[2];
+}
+
+function countBits(mask: number): number {
+  let bits = 0;
+  for (let i = 0; i < 4; i++) {
+    if (mask & (1 << i)) bits++;
+  }
+  return bits;
 }

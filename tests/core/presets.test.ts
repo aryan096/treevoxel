@@ -1,19 +1,15 @@
 import { describe, it, expect } from 'vitest';
-import { PRESETS, applyPreset, applyPresetBlockColors } from '../../src/core/presets';
+import { PRESETS, applyPreset, applyPresetBlockColors, applyPresetMinecraftPalette } from '../../src/core/presets';
 import { getDefaultParams } from '../../src/core/parameters';
-import type { BlockColors } from '../../src/core/types';
+import type { BlockColors, MinecraftPalette } from '../../src/core/types';
 
 describe('presets', () => {
-  it('has starter and specialty presets', () => {
-    expect(PRESETS).toHaveLength(7);
+  it('has only the three refined starter presets', () => {
+    expect(PRESETS).toHaveLength(3);
     const ids = PRESETS.map(p => p.id);
     expect(ids).toContain('spruce');
     expect(ids).toContain('oak');
     expect(ids).toContain('willow');
-    expect(ids).toContain('italian-cypress');
-    expect(ids).toContain('baobab');
-    expect(ids).toContain('monkey-puzzle');
-    expect(ids).toContain('joshua-tree');
   });
 
   it('every preset has name, description, growthForm, and saved colors', () => {
@@ -24,6 +20,11 @@ describe('presets', () => {
       expect(preset.blockColors.log).toMatch(/^#/);
       expect(preset.blockColors.branch).toMatch(/^#/);
       expect(preset.blockColors.leaf).toMatch(/^#/);
+      expect(preset.blockColors.fence).toMatch(/^#/);
+      expect(preset.minecraftPalette?.log).toBeTruthy();
+      expect(preset.minecraftPalette?.branch).toBeTruthy();
+      expect(preset.minecraftPalette?.fence).toBeTruthy();
+      expect(preset.minecraftPalette?.leaf).toBeTruthy();
     }
   });
 
@@ -49,6 +50,7 @@ describe('presets', () => {
       log: '#111111',
       branch: '#222222',
       leaf: '#333333',
+      fence: '#222222',
     };
     const original = { ...baseColors };
     const willow = PRESETS.find((p) => p.id === 'willow')!;
@@ -58,21 +60,34 @@ describe('presets', () => {
     expect(baseColors).toEqual(original);
   });
 
+  it('applyPresetMinecraftPalette returns preset palette without mutating input', () => {
+    const basePalette: MinecraftPalette = {
+      log: 'oak_log',
+      branch: 'oak_log',
+      fence: 'oak_fence',
+      leaf: 'oak_leaves',
+    };
+    const original = { ...basePalette };
+    const spruce = PRESETS.find((p) => p.id === 'spruce')!;
+    const result = applyPresetMinecraftPalette(basePalette, spruce);
+
+    expect(result).toEqual(spruce.minecraftPalette);
+    expect(basePalette).toEqual(original);
+  });
+
   it('preserves distinct silhouette families across presets', () => {
     const spruce = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'spruce')!);
     const oak = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'oak')!);
     const willow = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'willow')!);
-    const cypress = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'italian-cypress')!);
-    const baobab = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'baobab')!);
-    const joshua = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'joshua-tree')!);
 
     expect(spruce.crownWidth).toBeLessThan(oak.crownWidth);
-    expect(cypress.crownWidth).toBeLessThan(spruce.crownWidth);
     expect(willow.branchDroop).toBeGreaterThan(oak.branchDroop);
-    expect(baobab.trunkBaseRadius).toBeGreaterThan(oak.trunkBaseRadius);
-    expect(baobab.crownFullness).toBeLessThan(oak.crownFullness);
-    expect(joshua.interiorLeafPruning).toBeGreaterThan(willow.interiorLeafPruning);
+    expect(willow.crownWidth).toBeGreaterThan(oak.crownWidth);
+    expect(oak.trunkBaseRadius).toBeGreaterThan(spruce.trunkBaseRadius);
+    expect(willow.clearTrunkHeight).toBeGreaterThan(spruce.clearTrunkHeight);
+    expect(spruce.apicalDominance).toBeGreaterThan(oak.apicalDominance);
+    expect(willow.interiorLeafPruning).toBeLessThan(oak.interiorLeafPruning);
     expect(spruce.randomSeed).not.toBe(oak.randomSeed);
-    expect(cypress.randomSeed).not.toBe(willow.randomSeed);
+    expect(willow.randomSeed).not.toBe(oak.randomSeed);
   });
 });

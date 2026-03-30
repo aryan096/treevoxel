@@ -19,39 +19,19 @@ const adminKeys = new Set(
 
 const presetBlockColors = {
   spruce: {
-    log: '#5b3a24',
-    branch: '#6b4a2e',
-    leaf: '#355f36',
+    log: '#5a3925',
+    branch: '#66462f',
+    leaf: '#2f5632',
   },
   oak: {
-    log: '#6e4a2f',
-    branch: '#856331',
-    leaf: '#5f8f41',
+    log: '#70492f',
+    branch: '#7f5d37',
+    leaf: '#5e8744',
   },
   willow: {
-    log: '#7a5a3b',
-    branch: '#8f6c44',
-    leaf: '#7ea05a',
-  },
-  'italian-cypress': {
-    log: '#5d3b28',
-    branch: '#674330',
-    leaf: '#2f5b35',
-  },
-  baobab: {
-    log: '#8a6a53',
-    branch: '#9c7c60',
-    leaf: '#7f944f',
-  },
-  'monkey-puzzle': {
-    log: '#4b3427',
-    branch: '#5d4330',
-    leaf: '#4a6b39',
-  },
-  'joshua-tree': {
-    log: '#705840',
-    branch: '#806648',
-    leaf: '#71854d',
+    log: '#79603f',
+    branch: '#8a6f49',
+    leaf: '#7a9a58',
   },
 };
 const defaultBlockColors = {

@@ -49,3 +49,51 @@ describe('parameters', () => {
     }
   });
 });
+
+describe('v2 expanded ranges', () => {
+  const findParam = (id: string) => PARAMETER_DEFS.find((p) => p.id === id)!;
+
+  it('colorRandomness defaults to 0.1', () => {
+    expect(findParam('colorRandomness').defaultValue).toBe(0.1);
+  });
+
+  it('height goes up to 200', () => {
+    expect(findParam('height').max).toBe(200);
+  });
+
+  it('crownWidth goes up to 120', () => {
+    expect(findParam('crownWidth').max).toBe(120);
+  });
+
+  it('trunkBaseRadius goes up to 20', () => {
+    expect(findParam('trunkBaseRadius').max).toBe(20);
+  });
+
+  it('primaryBranchCount goes up to 40', () => {
+    expect(findParam('primaryBranchCount').max).toBe(40);
+  });
+
+  it('branchOrderDepth goes up to 6', () => {
+    expect(findParam('branchOrderDepth').max).toBe(6);
+  });
+
+  it('leafClusterRadius goes up to 15', () => {
+    expect(findParam('leafClusterRadius').max).toBe(15);
+  });
+
+  it('randomSeed goes up to 999999', () => {
+    expect(findParam('randomSeed').max).toBe(999999);
+  });
+
+  it('crownDepth min is 0.05 and max is 1.0', () => {
+    const p = findParam('crownDepth');
+    expect(p.min).toBe(0.05);
+    expect(p.max).toBe(1.0);
+  });
+
+  it('branchLengthRatio min is 0.1 and max is 2.0', () => {
+    const p = findParam('branchLengthRatio');
+    expect(p.min).toBe(0.1);
+    expect(p.max).toBe(2.0);
+  });
+});

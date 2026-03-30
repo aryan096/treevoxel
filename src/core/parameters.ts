@@ -6,14 +6,14 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     description: 'Seed for deterministic random variation. Same seed = same tree.',
     effectIncrease: 'Different random variation.',
     effectDecrease: 'Different random variation.',
-    min: 0, max: 99999, step: 1, defaultValue: 42,
+    min: 0, max: 999999, step: 1, defaultValue: 42,
   },
   {
     id: 'colorRandomness', label: 'Color Randomness', group: 'environment',
     description: 'How much per-block color variation is applied to logs, branches, and leaves.',
     effectIncrease: 'More mottled, varied block colors.',
     effectDecrease: 'Flatter, more uniform block colors.',
-    min: 0, max: 2, step: 0.05, defaultValue: 1,
+    min: 0, max: 2, step: 0.05, defaultValue: 0.1,
   },
   // --- Global Dimensions ---
   {
@@ -21,21 +21,21 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     description: 'Total tree height in blocks from ground to crown top.',
     effectIncrease: 'Taller tree with more vertical layers.',
     effectDecrease: 'Shorter, more compact tree.',
-    min: 5, max: 80, step: 1, defaultValue: 20,
+    min: 5, max: 200, step: 1, defaultValue: 20,
   },
   {
     id: 'crownWidth', label: 'Crown Width', group: 'dimensions',
     description: 'Maximum lateral spread of the crown in blocks.',
     effectIncrease: 'Wider, more spreading canopy.',
     effectDecrease: 'Narrower, more columnar crown.',
-    min: 2, max: 40, step: 1, defaultValue: 12,
+    min: 2, max: 120, step: 1, defaultValue: 12,
   },
   {
     id: 'crownDepth', label: 'Crown Depth', group: 'dimensions',
     description: 'Fraction of total height occupied by the crown canopy.',
     effectIncrease: 'Canopy extends further down the trunk.',
     effectDecrease: 'Canopy concentrated at the top, longer bare trunk.',
-    min: 0.1, max: 0.95, step: 0.05, defaultValue: 0.6,
+    min: 0.05, max: 1.0, step: 0.05, defaultValue: 0.6,
   },
   // --- Trunk ---
   {
@@ -43,7 +43,7 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     description: 'Trunk thickness near the ground in blocks.',
     effectIncrease: 'Thicker, more massive trunk.',
     effectDecrease: 'Thinner, more delicate trunk.',
-    min: 1, max: 6, step: 0.5, defaultValue: 2,
+    min: 1, max: 20, step: 0.5, defaultValue: 2,
   },
   {
     id: 'trunkTaper', label: 'Trunk Taper', group: 'trunk',
@@ -93,7 +93,7 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     description: 'Number of major scaffold branches emerging from the trunk.',
     effectIncrease: 'More main limbs, bushier structure.',
     effectDecrease: 'Fewer main limbs, sparser crown.',
-    min: 2, max: 16, step: 1, defaultValue: 6,
+    min: 2, max: 40, step: 1, defaultValue: 6,
   },
   {
     id: 'branchAngle', label: 'Branch Angle', group: 'branching',
@@ -114,14 +114,14 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     description: 'Branch length as a fraction of the distance from its start to the crown edge.',
     effectIncrease: 'Longer branches, wider spread.',
     effectDecrease: 'Shorter branches, tighter crown.',
-    min: 0.2, max: 1.0, step: 0.05, defaultValue: 0.7,
+    min: 0.1, max: 2.0, step: 0.05, defaultValue: 0.7,
   },
   {
     id: 'branchOrderDepth', label: 'Branch Order Depth', group: 'branching',
     description: 'How many levels of sub-branching are generated (1 = no sub-branches).',
     effectIncrease: 'More detailed, finer branching structure.',
     effectDecrease: 'Simpler branching with fewer subdivisions.',
-    min: 1, max: 4, step: 1, defaultValue: 2,
+    min: 1, max: 6, step: 1, defaultValue: 2,
   },
   {
     id: 'branchDensity', label: 'Branch Density', group: 'branching',
@@ -150,21 +150,21 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     description: 'How densely the crown volume is occupied by foliage.',
     effectIncrease: 'Dense, full canopy.',
     effectDecrease: 'Open, airy canopy with gaps.',
-    min: 0.2, max: 1.0, step: 0.05, defaultValue: 0.7,
+    min: 0.2, max: 1.0, step: 0.05, defaultValue: 0.8,
   },
   {
     id: 'leafClusterRadius', label: 'Leaf Cluster Radius', group: 'crown',
     description: 'Typical leaf blob radius around branch tips in blocks.',
     effectIncrease: 'Larger, puffier leaf clusters.',
     effectDecrease: 'Smaller, tighter leaf clusters.',
-    min: 1, max: 5, step: 0.5, defaultValue: 2,
+    min: 1, max: 15, step: 0.5, defaultValue: 2,
   },
   {
     id: 'leafDensity', label: 'Leaf Density', group: 'crown',
     description: 'Amount of foliage generated per terminal branch region.',
     effectIncrease: 'More leaf blocks, denser canopy.',
     effectDecrease: 'Fewer leaf blocks, sparser canopy.',
-    min: 0.2, max: 1.0, step: 0.05, defaultValue: 0.7,
+    min: 0.2, max: 1.0, step: 0.05, defaultValue: 0.82,
   },
   {
     id: 'interiorLeafPruning', label: 'Interior Leaf Pruning', group: 'crown',

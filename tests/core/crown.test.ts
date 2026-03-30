@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
+import { buildBranchSegments } from '../../src/core/branchSegments';
 import { isInsideCrown, generateLeafClusters } from '../../src/core/crown';
 import { generateSkeleton } from '../../src/core/skeleton';
 import { getDefaultParams } from '../../src/core/parameters';
-import type { TreeParams, CrownShape } from '../../src/core/types';
 
 describe('isInsideCrown', () => {
   it('point at center of spherical crown is inside', () => {
@@ -84,6 +84,23 @@ describe('generateLeafClusters', () => {
     const weepingAverageY = weepingClusters.reduce((sum, cluster) => sum + cluster.center[1], 0) / weepingClusters.length;
 
     expect(weepingAverageY).toBeLessThan(ovoidAverageY);
+  });
+
+  it('segment-informed anchors create a fuller crown than endpoint-only anchors', () => {
+    const fullerParams = {
+      ...params,
+      randomSeed: 777,
+      branchOrderDepth: 3,
+      branchDensity: 0.9,
+      leafDensity: 0.78,
+    };
+
+    const skeleton = generateSkeleton(fullerParams);
+    const segments = buildBranchSegments(skeleton);
+    const nodeOnlyClusters = generateLeafClusters(skeleton, fullerParams);
+    const segmentClusters = generateLeafClusters(skeleton, fullerParams, segments);
+
+    expect(segmentClusters.length).toBeGreaterThan(nodeOnlyClusters.length);
   });
 });
 

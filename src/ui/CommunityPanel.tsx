@@ -1,27 +1,29 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from 'react';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import { listApprovedCreations, listReviewQueue, reviewCreation, submitCreation, type CommunityCreation } from '../community/api';
-import type { BlockType } from '../core/types';
+import type { BlockColors } from '../core/types';
 import { useTreeStore } from '../store/treeStore';
 import styles from './CommunityPanel.module.css';
 
 const APPROVED_PAGE_SIZE = 5;
 const SCROLLBAR_WIDTH = 7;
+const PALETTE_PREVIEW_TYPES = ['log', 'branch', 'leaf'] as const;
+type PalettePreviewType = (typeof PALETTE_PREVIEW_TYPES)[number];
 
 function formatDate(value: string): string {
   return new Date(value).toLocaleString();
 }
 
-const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
+const BLOCK_TYPE_LABELS: Record<PalettePreviewType, string> = {
   log: 'Log',
   branch: 'Branch',
   leaf: 'Leaf',
 };
 
-function PalettePreview({ colors }: { colors: Record<BlockType, string> }) {
+function PalettePreview({ colors }: { colors: Pick<BlockColors, PalettePreviewType> }) {
   return (
     <div className={styles.palette}>
-      {(Object.keys(BLOCK_TYPE_LABELS) as BlockType[]).map((type) => (
+      {PALETTE_PREVIEW_TYPES.map((type) => (
         <div key={type} className={styles.paletteItem}>
           <span
             className={styles.paletteSwatch}
@@ -39,6 +41,7 @@ export default function CommunityPanel() {
   const presetId = useTreeStore((state) => state.presetId);
   const params = useTreeStore((state) => state.params);
   const blockColors = useTreeStore((state) => state.blockColors);
+  const minecraftPalette = useTreeStore((state) => state.minecraftPalette);
   const loadSnapshot = useTreeStore((state) => state.loadSnapshot);
 
   const [creationName, setCreationName] = useState('');
@@ -151,6 +154,7 @@ export default function CommunityPanel() {
           presetId,
           params,
           blockColors,
+          minecraftPalette,
         },
       });
 

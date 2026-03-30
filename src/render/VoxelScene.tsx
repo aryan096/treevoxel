@@ -9,9 +9,11 @@ type VoxelSceneProps = {
 };
 
 export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProps) {
-  const display = useTreeStore((s) => s.display);
+  const darkMode = useTreeStore((s) => s.display.darkMode);
+  const showGrid = useTreeStore((s) => s.display.showGrid);
+  const showAxes = useTreeStore((s) => s.display.showAxes);
   const height = useTreeStore((s) => s.params.height);
-  const scenePalette = display.darkMode
+  const scenePalette = darkMode
     ? {
         background: '#17120d',
         gridCell: '#4f4334',
@@ -33,6 +35,7 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
     <Canvas
       frameloop="demand"
       camera={{ position: [30, 20, 30], fov: 50, near: 0.1, far: 500 }}
+      dpr={[1, 1.5]}
       gl={{ antialias: true }}
       shadows
     >
@@ -51,7 +54,7 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
       <VoxelMesh />
       {showSliceHighlight ? <LayerHighlight /> : null}
 
-      {display.showGrid && (
+      {showGrid && (
         <Grid
           args={[60, 60]}
           position={[0, -0.01, 0]}
@@ -67,7 +70,7 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
         />
       )}
 
-      {display.showAxes && (
+      {showAxes && (
         <GizmoHelper alignment="bottom-left" margin={[60, 60]}>
           <GizmoViewport
             axisColors={scenePalette.axisColors}
