@@ -4,9 +4,12 @@ import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const currentFilePath = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(currentFilePath);
 const projectRoot = path.resolve(__dirname, '..');
-const dataDir = path.join(projectRoot, 'data');
+const dataDir = process.env.TREEVOXEL_DATA_DIR
+  ? path.resolve(process.env.TREEVOXEL_DATA_DIR)
+  : path.join(projectRoot, 'data');
 const dataFile = path.join(dataDir, 'community-creations.json');
 const distDir = path.join(projectRoot, 'dist');
 const port = Number(process.env.PORT ?? 8787);
@@ -38,10 +41,37 @@ const defaultBlockColors = {
   log: '#6b4226',
   branch: '#8b6914',
   leaf: '#4d9a45',
+  fence: '#8b6914',
+};
+const defaultMinecraftPalette = {
+  log: 'oak_log',
+  branch: 'stripped_oak_log',
+  fence: 'oak_fence',
+  leaf: 'oak_leaves',
+};
+const presetMinecraftPalette = {
+  spruce: {
+    log: 'spruce_log',
+    branch: 'stripped_spruce_log',
+    fence: 'spruce_fence',
+    leaf: 'spruce_leaves',
+  },
+  oak: {
+    log: 'oak_log',
+    branch: 'stripped_oak_log',
+    fence: 'oak_fence',
+    leaf: 'oak_leaves',
+  },
+  willow: {
+    log: 'oak_log',
+    branch: 'stripped_oak_log',
+    fence: 'oak_fence',
+    leaf: 'oak_leaves',
+  },
 };
 const allowedPresets = new Set(Object.keys(presetBlockColors));
 const allowedCrownShapes = new Set(['conical', 'spherical', 'ovoid', 'columnar', 'vase', 'weeping', 'irregular']);
-const allowedBlockTypes = new Set(['log', 'branch', 'leaf']);
+const allowedBlockTypes = new Set(['log', 'branch', 'leaf', 'fence']);
 const requiredNumericParams = [
   'randomSeed',
   'colorRandomness',
@@ -72,10 +102,6 @@ const requiredNumericParams = [
   'symmetryAssist',
   'buildabilityBias',
 ];
-const legacyNumericParamDefaults = {
-  trunkLeanDirection: 0,
-};
-
 function json(response, status, payload) {
   response.writeHead(status, {
     'Content-Type': 'application/json; charset=utf-8',
@@ -112,6 +138,10 @@ function getPresetBlockColors(presetId) {
   return presetBlockColors[presetId] ?? defaultBlockColors;
 }
 
+function getPresetMinecraftPalette(presetId) {
+  return presetMinecraftPalette[presetId] ?? defaultMinecraftPalette;
+}
+
 function normalizeParams(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('Submission params are invalid.');
@@ -119,7 +149,7 @@ function normalizeParams(value) {
 
   const params = {};
   for (const key of requiredNumericParams) {
-    const raw = value[key] ?? legacyNumericParamDefaults[key];
+    const raw = value[key];
     if (typeof raw !== 'number' || !Number.isFinite(raw)) {
       throw new Error(`Param "${key}" is invalid.`);
     }
@@ -152,7 +182,26 @@ function normalizeBlockColors(value, presetId, { allowMissing = false } = {}) {
   return blockColors;
 }
 
-function normalizeSnapshot(snapshot, { allowMissingBlockColors = false } = {}) {
+function normalizeMinecraftPalette(value, presetId) {
+  const fallback = getPresetMinecraftPalette(presetId);
+  const raw = value && typeof value === 'object' && !Array.isArray(value) ? value : null;
+
+  if (!raw) {
+    throw new Error('Submission Minecraft palette is invalid.');
+  }
+
+  const minecraftPalette = {};
+  for (const type of allowedBlockTypes) {
+    const blockId = raw[type];
+    if (typeof blockId !== 'string' || !blockId.trim()) {
+      throw new Error(`Minecraft palette "${type}" is invalid.`);
+    }
+    minecraftPalette[type] = blockId.trim() || fallback[type];
+  }
+  return minecraftPalette;
+}
+
+export function normalizeSnapshot(snapshot) {
   if (!snapshot || typeof snapshot !== 'object' || Array.isArray(snapshot)) {
     throw new Error('Submission snapshot is invalid.');
   }
@@ -164,9 +213,8 @@ function normalizeSnapshot(snapshot, { allowMissingBlockColors = false } = {}) {
   return {
     presetId: snapshot.presetId,
     params: normalizeParams(snapshot.params),
-    blockColors: normalizeBlockColors(snapshot.blockColors, snapshot.presetId, {
-      allowMissing: allowMissingBlockColors,
-    }),
+    blockColors: normalizeBlockColors(snapshot.blockColors, snapshot.presetId),
+    minecraftPalette: normalizeMinecraftPalette(snapshot.minecraftPalette, snapshot.presetId),
   };
 }
 
@@ -300,9 +348,11 @@ function serializeSubmission(submission) {
     status: submission.status,
     createdAt: submission.createdAt,
     reviewedAt: submission.reviewedAt ?? null,
-    snapshot: normalizeSnapshot(submission.snapshot, { allowMissingBlockColors: true }),
+    snapshot: normalizeSnapshot(submission.snapshot),
   };
 }
+
+export { serializeSubmission };
 
 const server = createServer(async (request, response) => {
   if (!request.url || !request.method) {
@@ -418,6 +468,8 @@ const server = createServer(async (request, response) => {
   }
 });
 
-server.listen(port, () => {
-  console.log(`Community server listening on http://localhost:${port}`);
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === currentFilePath) {
+  server.listen(port, () => {
+    console.log(`Community server listening on http://localhost:${port}`);
+  });
+}
