@@ -412,6 +412,15 @@ async function tryServeStaticAsset(response, pathname) {
   }
 }
 
+async function hasFrontendBuild() {
+  try {
+    const fileInfo = await stat(path.join(distDir, 'index.html'));
+    return fileInfo.isFile();
+  } catch {
+    return false;
+  }
+}
+
 async function serveFrontendApp(response) {
   try {
     const indexHtml = await readFile(path.join(distDir, 'index.html'));
@@ -421,9 +430,22 @@ async function serveFrontendApp(response) {
     });
     response.end(indexHtml);
   } catch {
-    json(response, 503, {
-      error: 'Frontend build is unavailable. Run `npm run build` before starting the production server.',
+    response.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'no-cache',
     });
+    response.end(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Treevoxel</title>
+  </head>
+  <body>
+    <h1>Treevoxel server is running</h1>
+    <p>Frontend build is unavailable. Run <code>npm run build</code> before starting the production server.</p>
+  </body>
+</html>`);
   }
 }
 
@@ -460,6 +482,14 @@ const server = createServer(async (request, response) => {
   const url = new URL(request.url, `http://${request.headers.host ?? 'localhost'}`);
 
   try {
+    if (request.method === 'GET' && url.pathname === '/api/health') {
+      json(response, 200, {
+        ok: true,
+        frontendBuilt: await hasFrontendBuild(),
+      });
+      return;
+    }
+
     if (request.method === 'GET' && url.pathname === '/api/community/creations') {
       const db = await readDb();
       const approved = db.submissions
@@ -556,7 +586,27 @@ const server = createServer(async (request, response) => {
 });
 
 if (process.argv[1] && path.resolve(process.argv[1]) === currentFilePath) {
+  server.on('error', (error) => {
+    console.error('Community server failed to start.', error);
+    process.exitCode = 1;
+  });
+
   server.listen(port, () => {
     console.log(`Community server listening on http://localhost:${port}`);
   });
+
+  const shutdown = (signal) => {
+    console.log(`Received ${signal}; shutting down community server.`);
+    server.close((error) => {
+      if (error) {
+        console.error('Error while shutting down community server.', error);
+        process.exit(1);
+        return;
+      }
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 }
