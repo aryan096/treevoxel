@@ -64,8 +64,10 @@
 }
 
 .logo {
-  height: 32px;
-  width: auto;
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
 }
 
 .brandText {

@@ -42,7 +42,7 @@ export default function App() {
       <aside className={styles.sidebar}>
         <header className={styles.header}>
           <div className={styles.branding}>
-            <img src="/logo.svg" alt="Treevoxel" className={styles.logo} />
+            <img src="/treevoxel.png" alt="Treevoxel" className={styles.logo} />
             <div className={styles.brandText}>
               <span className={styles.appTitle}>Treevoxel</span>
               <span className={styles.subtitle}>Voxel tree authoring tool</span>
