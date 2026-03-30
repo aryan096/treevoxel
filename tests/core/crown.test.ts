@@ -102,6 +102,28 @@ describe('generateLeafClusters', () => {
 
     expect(segmentClusters.length).toBeGreaterThan(nodeOnlyClusters.length);
   });
+
+  it('high crownFullness adds filler clusters beyond branch endpoints', () => {
+    const base = {
+      ...params,
+      randomSeed: 200,
+      primaryBranchCount: 3,
+      branchOrderDepth: 1,
+      branchDensity: 0.5,
+      leafDensity: 0.8,
+    };
+
+    const sparse = generateLeafClusters(
+      generateSkeleton({ ...base, crownFullness: 0.3 }),
+      { ...base, crownFullness: 0.3 },
+    );
+    const full = generateLeafClusters(
+      generateSkeleton({ ...base, crownFullness: 0.95 }),
+      { ...base, crownFullness: 0.95 },
+    );
+
+    expect(full.length).toBeGreaterThan(sparse.length * 1.3);
+  });
 });
 
 function findDirectionalReach(

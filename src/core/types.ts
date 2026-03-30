@@ -173,9 +173,16 @@ export type TreeParams = {
 
 // --- Presets ---
 export type PresetId =
-  | 'spruce'
   | 'oak'
-  | 'willow';
+  | 'dark_oak'
+  | 'spruce'
+  | 'birch'
+  | 'acacia'
+  | 'jungle'
+  | 'cherry_blossom'
+  | 'mangrove'
+  | 'baobab'
+  | 'crazy';
 
 export type Preset = {
   id: PresetId;

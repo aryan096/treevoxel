@@ -21,20 +21,65 @@ const adminKeys = new Set(
 );
 
 const presetBlockColors = {
-  spruce: {
-    log: '#5a3925',
-    branch: '#66462f',
-    leaf: '#2f5632',
-  },
   oak: {
     log: '#70492f',
     branch: '#7f5d37',
     leaf: '#5e8744',
+    fence: '#7f5d37',
   },
-  willow: {
-    log: '#79603f',
-    branch: '#8a6f49',
-    leaf: '#7a9a58',
+  dark_oak: {
+    log: '#3e2912',
+    branch: '#5a4428',
+    leaf: '#456b32',
+    fence: '#5a4428',
+  },
+  spruce: {
+    log: '#5a3925',
+    branch: '#66462f',
+    leaf: '#2f5632',
+    fence: '#66462f',
+  },
+  birch: {
+    log: '#d5cdb4',
+    branch: '#c8b77d',
+    leaf: '#6d9e47',
+    fence: '#c8b77d',
+  },
+  acacia: {
+    log: '#676157',
+    branch: '#b05d3b',
+    leaf: '#5c7f37',
+    fence: '#b05d3b',
+  },
+  jungle: {
+    log: '#564419',
+    branch: '#ac8850',
+    leaf: '#30801a',
+    fence: '#ac8850',
+  },
+  cherry_blossom: {
+    log: '#3b1e1a',
+    branch: '#d9a1a1',
+    leaf: '#e8b4c8',
+    fence: '#d9a1a1',
+  },
+  mangrove: {
+    log: '#6b4535',
+    branch: '#7b3a36',
+    leaf: '#4d8b28',
+    fence: '#7b3a36',
+  },
+  baobab: {
+    log: '#8a6a42',
+    branch: '#b9814d',
+    leaf: '#6f8a3a',
+    fence: '#b9814d',
+  },
+  crazy: {
+    log: '#5f3d23',
+    branch: '#915f2f',
+    leaf: '#7aac4f',
+    fence: '#915f2f',
   },
 };
 const defaultBlockColors = {
@@ -50,22 +95,64 @@ const defaultMinecraftPalette = {
   leaf: 'oak_leaves',
 };
 const presetMinecraftPalette = {
-  spruce: {
-    log: 'spruce_log',
-    branch: 'stripped_spruce_log',
-    fence: 'spruce_fence',
-    leaf: 'spruce_leaves',
-  },
   oak: {
     log: 'oak_log',
     branch: 'stripped_oak_log',
     fence: 'oak_fence',
     leaf: 'oak_leaves',
   },
-  willow: {
+  dark_oak: {
+    log: 'dark_oak_log',
+    branch: 'stripped_dark_oak_log',
+    fence: 'dark_oak_fence',
+    leaf: 'dark_oak_leaves',
+  },
+  spruce: {
+    log: 'spruce_log',
+    branch: 'stripped_spruce_log',
+    fence: 'spruce_fence',
+    leaf: 'spruce_leaves',
+  },
+  birch: {
+    log: 'birch_log',
+    branch: 'stripped_birch_log',
+    fence: 'birch_fence',
+    leaf: 'birch_leaves',
+  },
+  acacia: {
+    log: 'acacia_log',
+    branch: 'stripped_acacia_log',
+    fence: 'acacia_fence',
+    leaf: 'acacia_leaves',
+  },
+  jungle: {
+    log: 'jungle_log',
+    branch: 'stripped_jungle_log',
+    fence: 'jungle_fence',
+    leaf: 'jungle_leaves',
+  },
+  cherry_blossom: {
+    log: 'cherry_log',
+    branch: 'stripped_cherry_log',
+    fence: 'cherry_fence',
+    leaf: 'cherry_leaves',
+  },
+  mangrove: {
+    log: 'mangrove_log',
+    branch: 'stripped_mangrove_log',
+    fence: 'mangrove_fence',
+    leaf: 'mangrove_leaves',
+  },
+  baobab: {
+    log: 'acacia_log',
+    branch: 'stripped_acacia_log',
+    fence: 'acacia_fence',
+    leaf: 'acacia_leaves',
+  },
+  crazy: {
     log: 'oak_log',
-    branch: 'stripped_oak_log',
-    fence: 'oak_fence',
+    branch: 'stripped_acacia_log',
+    fence: 'acacia_fence',
     leaf: 'oak_leaves',
   },
 };

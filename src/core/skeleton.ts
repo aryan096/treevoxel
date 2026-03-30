@@ -136,13 +136,19 @@ export function generateSkeleton(params: TreeParams): SkeletonNode[] {
     }
   }
 
-  const branchCount = Math.round(params.primaryBranchCount * params.branchDensity);
+  const branchCount = params.primaryBranchCount;
   const scaffoldAttachmentIndices = selectScaffoldAttachmentIndices(eligibleTrunkIndices, branchCount);
 
-  for (const trunkIdx of scaffoldAttachmentIndices) {
+  const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5));
+  const startAzimuth = rng() * Math.PI * 2;
+
+  for (let b = 0; b < scaffoldAttachmentIndices.length; b++) {
+    const trunkIdx = scaffoldAttachmentIndices[b];
     const trunkNode = nodes[trunkIdx];
 
-    const azimuth = rng() * Math.PI * 2;
+    const baseAzimuth = startAzimuth + b * GOLDEN_ANGLE;
+    const jitter = (rng() - 0.5) * Math.PI * 2 * (1 - params.symmetryAssist);
+    const azimuth = baseAzimuth + jitter;
     const angle = (params.branchAngle + (rng() - 0.5) * 2 * params.branchAngleVariance) * Math.PI / 180;
 
     const sinA = Math.sin(angle);
@@ -221,7 +227,9 @@ function addBranch(
 
   // Recurse for sub-branches
   if (order < params.branchOrderDepth && branchNodeIndices.length > 0) {
-    const subCount = Math.round(2 * params.branchDensity);
+    const lengthFactor = Math.max(1, length / 3);
+    const orderFactor = Math.max(0.5, 1 - (order - 1) * 0.25);
+    const subCount = Math.max(1, Math.round(lengthFactor * orderFactor * params.branchDensity * 2));
     for (let i = 0; i < subCount; i++) {
       const attachmentNodeIdx = sampleAttachmentNode(branchNodeIndices, rng);
       const attachmentNode = nodes[attachmentNodeIdx];

@@ -1,15 +1,23 @@
 import { describe, it, expect } from 'vitest';
 import { PRESETS, applyPreset, applyPresetBlockColors, applyPresetMinecraftPalette } from '../../src/core/presets';
+import { generateTree } from '../../src/core/generate';
 import { getDefaultParams } from '../../src/core/parameters';
 import type { BlockColors, MinecraftPalette } from '../../src/core/types';
 
 describe('presets', () => {
-  it('has only the three refined starter presets', () => {
-    expect(PRESETS).toHaveLength(3);
+  it('matches the Minecraft-first preset catalog plus the two extras', () => {
+    expect(PRESETS).toHaveLength(10);
     const ids = PRESETS.map(p => p.id);
-    expect(ids).toContain('spruce');
     expect(ids).toContain('oak');
-    expect(ids).toContain('willow');
+    expect(ids).toContain('dark_oak');
+    expect(ids).toContain('spruce');
+    expect(ids).toContain('birch');
+    expect(ids).toContain('acacia');
+    expect(ids).toContain('jungle');
+    expect(ids).toContain('cherry_blossom');
+    expect(ids).toContain('mangrove');
+    expect(ids).toContain('baobab');
+    expect(ids).toContain('crazy');
   });
 
   it('every preset has name, description, growthForm, and saved colors', () => {
@@ -25,6 +33,12 @@ describe('presets', () => {
       expect(preset.minecraftPalette?.branch).toBeTruthy();
       expect(preset.minecraftPalette?.fence).toBeTruthy();
       expect(preset.minecraftPalette?.leaf).toBeTruthy();
+    }
+  });
+
+  it('keeps all preset default heights at or below the 20-block build target', () => {
+    for (const preset of PRESETS) {
+      expect((preset.params.height ?? Infinity)).toBeLessThanOrEqual(20);
     }
   });
 
@@ -53,10 +67,10 @@ describe('presets', () => {
       fence: '#222222',
     };
     const original = { ...baseColors };
-    const willow = PRESETS.find((p) => p.id === 'willow')!;
-    const result = applyPresetBlockColors(baseColors, willow);
+    const mangrove = PRESETS.find((p) => p.id === 'mangrove')!;
+    const result = applyPresetBlockColors(baseColors, mangrove);
 
-    expect(result).toEqual(willow.blockColors);
+    expect(result).toEqual(mangrove.blockColors);
     expect(baseColors).toEqual(original);
   });
 
@@ -78,16 +92,69 @@ describe('presets', () => {
   it('preserves distinct silhouette families across presets', () => {
     const spruce = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'spruce')!);
     const oak = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'oak')!);
-    const willow = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'willow')!);
+    const birch = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'birch')!);
+    const acacia = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'acacia')!);
+    const darkOak = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'dark_oak')!);
+    const baobab = applyPreset(getDefaultParams(), PRESETS.find((p) => p.id === 'baobab')!);
 
     expect(spruce.crownWidth).toBeLessThan(oak.crownWidth);
-    expect(willow.branchDroop).toBeGreaterThan(oak.branchDroop);
-    expect(willow.crownWidth).toBeGreaterThan(oak.crownWidth);
+    expect(birch.clearTrunkHeight).toBeGreaterThan(oak.clearTrunkHeight);
+    expect(acacia.branchAngle).toBeGreaterThan(oak.branchAngle);
+    expect(darkOak.crownFullness).toBeGreaterThan(oak.crownFullness);
+    expect(baobab.trunkBaseRadius).toBeGreaterThan(darkOak.trunkBaseRadius);
     expect(oak.trunkBaseRadius).toBeGreaterThan(spruce.trunkBaseRadius);
-    expect(willow.clearTrunkHeight).toBeGreaterThan(spruce.clearTrunkHeight);
     expect(spruce.apicalDominance).toBeGreaterThan(oak.apicalDominance);
-    expect(willow.interiorLeafPruning).toBeLessThan(oak.interiorLeafPruning);
-    expect(spruce.randomSeed).not.toBe(oak.randomSeed);
-    expect(willow.randomSeed).not.toBe(oak.randomSeed);
+    expect(acacia.trunkLean).toBeGreaterThan(oak.trunkLean);
+    expect(spruce.randomSeed).not.toBe(darkOak.randomSeed);
+    expect(baobab.randomSeed).not.toBe(acacia.randomSeed);
+  });
+
+  describe('preset quality gates', () => {
+    const minimumLeafClusters: Record<string, number> = {
+      oak: 20,
+      dark_oak: 25,
+      spruce: 28,
+      birch: 12,
+      acacia: 15,
+      jungle: 20,
+      cherry_blossom: 20,
+      mangrove: 20,
+      baobab: 12,
+      crazy: 20,
+    };
+
+    for (const preset of PRESETS) {
+      it(`${preset.id} produces at least ${minimumLeafClusters[preset.id] ?? 10} leaf clusters`, () => {
+        const params = applyPreset(getDefaultParams(), preset);
+        const result = generateTree(params);
+
+        expect(result.model.leafClusters.length).toBeGreaterThanOrEqual(
+          minimumLeafClusters[preset.id] ?? 10,
+        );
+      });
+    }
+
+    for (const preset of PRESETS) {
+      it(`${preset.id} scaffold branches span at least 3 azimuth quadrants`, () => {
+        const params = applyPreset(getDefaultParams(), preset);
+        const result = generateTree(params);
+        const nodes = result.model.nodes;
+        const scaffoldRoots = nodes.filter(
+          (n) => n.role === 'scaffold' && nodes[n.parentIndex!]?.role === 'trunk',
+        );
+        const quadrants = new Set<number>();
+
+        for (const n of scaffoldRoots) {
+          const parent = nodes[n.parentIndex!];
+          const dx = n.position[0] - parent.position[0];
+          const dz = n.position[2] - parent.position[2];
+          const azimuth = Math.atan2(dz, dx);
+          const q = Math.floor(((azimuth + Math.PI) / (Math.PI * 2)) * 4) % 4;
+          quadrants.add(q);
+        }
+
+        expect(quadrants.size).toBeGreaterThanOrEqual(3);
+      });
+    }
   });
 });

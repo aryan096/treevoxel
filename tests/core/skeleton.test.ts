@@ -184,4 +184,85 @@ describe('generateSkeleton', () => {
       expect(topChildren.length).toBeGreaterThanOrEqual(2);
     }
   });
+
+  it('symmetryAssist spreads scaffold branches evenly around the trunk', () => {
+    const base = {
+      ...params,
+      randomSeed: 42,
+      primaryBranchCount: 8,
+      branchDensity: 1,
+      branchAngle: 50,
+      branchOrderDepth: 1,
+    };
+
+    const asymmetric = generateSkeleton({ ...base, symmetryAssist: 0 });
+    const symmetric = generateSkeleton({ ...base, symmetryAssist: 0.9 });
+
+    const asymSpread = getScaffoldAzimuthSpread(asymmetric);
+    const symSpread = getScaffoldAzimuthSpread(symmetric);
+
+    expect(symSpread).toBeLessThan(asymSpread);
+  });
+
+  it('scaffold branch count matches primaryBranchCount', () => {
+    const testParams = {
+      ...params,
+      randomSeed: 55,
+      primaryBranchCount: 8,
+      branchDensity: 0.5,
+      branchOrderDepth: 1,
+      clearTrunkHeight: 0.2,
+    };
+
+    const nodes = generateSkeleton(testParams);
+    const scaffoldRoots = nodes.filter(
+      (node) => node.role === 'scaffold' && node.parentIndex !== null && nodes[node.parentIndex].role === 'trunk',
+    );
+
+    expect(scaffoldRoots.length).toBeGreaterThanOrEqual(testParams.primaryBranchCount);
+  });
+
+  it('longer branches produce more sub-branches than shorter ones', () => {
+    const base = {
+      ...params,
+      randomSeed: 100,
+      primaryBranchCount: 4,
+      branchOrderDepth: 2,
+      branchDensity: 0.7,
+      symmetryAssist: 0.5,
+    };
+
+    const short = generateSkeleton({ ...base, branchLengthRatio: 0.3, crownWidth: 6 });
+    const long = generateSkeleton({ ...base, branchLengthRatio: 1.2, crownWidth: 16 });
+
+    const shortSecondary = short.filter((node) => node.role === 'secondary' || node.role === 'twig');
+    const longSecondary = long.filter((node) => node.role === 'secondary' || node.role === 'twig');
+
+    expect(longSecondary.length).toBeGreaterThan(shortSecondary.length * 1.5);
+  });
 });
+
+function getScaffoldAzimuthSpread(nodes: ReturnType<typeof generateSkeleton>): number {
+  const scaffoldNodes = nodes.filter(
+    (node) => node.role === 'scaffold' && node.parentIndex !== null && nodes[node.parentIndex].role === 'trunk',
+  );
+  const azimuths = scaffoldNodes.map((node) => {
+    const parent = nodes[node.parentIndex!];
+    const dx = node.position[0] - parent.position[0];
+    const dz = node.position[2] - parent.position[2];
+    return Math.atan2(dz, dx);
+  });
+
+  azimuths.sort((a, b) => a - b);
+  if (azimuths.length < 2) return Infinity;
+
+  const gaps: number[] = [];
+  for (let i = 1; i < azimuths.length; i++) {
+    gaps.push(azimuths[i] - azimuths[i - 1]);
+  }
+  gaps.push(Math.PI * 2 - azimuths[azimuths.length - 1] + azimuths[0]);
+
+  const mean = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length;
+  const variance = gaps.reduce((sum, gap) => sum + (gap - mean) ** 2, 0) / gaps.length;
+  return Math.sqrt(variance);
+}

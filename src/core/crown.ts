@@ -109,15 +109,18 @@ export function generateLeafClusters(
     const clusterRadius = params.leafClusterRadius * (0.72 + rng() * 0.55) * (0.84 + anchor.importance * 0.22);
     const weepingSag =
       params.crownShape === 'weeping'
-        ? clusterRadius * (0.35 + rng() * 0.45) * (0.55 + params.branchDroop * 0.9)
+        ? clusterRadius * (0.5 + rng() * 0.55) * (0.7 + params.branchDroop * 0.9)
         : 0;
+    const centerY = Math.min(y - weepingSag, crownTopY + 2);
 
     clusters.push({
-      center: [x, y - weepingSag, z],
+      center: [x, centerY, z],
       radius: clusterRadius,
       density: Math.min(1, params.crownFullness * (0.92 + anchor.importance * 0.14)),
     });
   }
+
+  addCrownFillerClusters(clusters, params, rng);
 
   if (clusters.length === 0) {
     for (let i = 0; i < skeleton.length; i++) {
@@ -133,6 +136,69 @@ export function generateLeafClusters(
   }
 
   return clusters;
+}
+
+function addCrownFillerClusters(
+  clusters: LeafCluster[],
+  params: TreeParams,
+  rng: () => number,
+): void {
+  if (params.crownFullness < 0.4) return;
+
+  const crownTopY = params.height;
+  const crownBottomY = params.height * (1 - params.crownDepth);
+  const crownRadius = params.crownWidth / 2;
+  const crownHeight = crownTopY - crownBottomY;
+  if (crownHeight <= 0 || crownRadius <= 0) return;
+
+  const crownVolume = crownRadius * crownRadius * crownHeight;
+  const fillerAttempts = Math.round(crownVolume * 0.02 * params.crownFullness);
+  if (fillerAttempts <= 0) return;
+
+  const fillerRadius = params.leafClusterRadius * 0.7;
+  const minDistSq = (params.leafClusterRadius * 1.2) ** 2;
+
+  for (let i = 0; i < fillerAttempts; i++) {
+    const verticalBias = params.crownShape === 'weeping'
+      ? Math.pow(rng(), 2.2) * 0.72
+      : rng();
+    const y = crownBottomY + verticalBias * crownHeight;
+    const angle = rng() * Math.PI * 2;
+    const radialOffset = Math.sqrt(rng()) * crownRadius;
+    const x = Math.cos(angle) * radialOffset;
+    const z = Math.sin(angle) * radialOffset;
+
+    if (!isInsideCrown(x, y, z, params.crownShape, crownBottomY, crownTopY, crownRadius)) {
+      continue;
+    }
+
+    let tooClose = false;
+    for (const cluster of clusters) {
+      const dx = cluster.center[0] - x;
+      const dy = cluster.center[1] - y;
+      const dz = cluster.center[2] - z;
+      if (dx * dx + dy * dy + dz * dz < minDistSq) {
+        tooClose = true;
+        break;
+      }
+    }
+    if (tooClose) continue;
+
+    const edgeDist = radialOffset / crownRadius;
+    const placementChance = params.crownFullness * (1 - edgeDist * 0.4);
+    if (rng() > placementChance) continue;
+    const fillerSag =
+      params.crownShape === 'weeping'
+        ? fillerRadius * (0.95 + rng() * 0.55) * (0.85 + params.branchDroop * 0.9)
+        : 0;
+    const centerY = Math.min(y - fillerSag, crownTopY + 2);
+
+    clusters.push({
+      center: [x, centerY, z],
+      radius: fillerRadius * (0.8 + rng() * 0.4),
+      density: params.crownFullness * 0.75,
+    });
+  }
 }
 
 function collectLeafAnchorsFromSegments(
