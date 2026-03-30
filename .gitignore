@@ -1,6 +1,9 @@
+AGENTS.md
+CLAUDE.md
 node_modules/
 dist/
 .DS_Store
 *.local
 docs/superpowers/*
+docs/specs/*
 .superpowers
