@@ -55,6 +55,8 @@
   z-index: 100;
   width: var(--radix-select-trigger-width);
   max-width: var(--radix-select-trigger-width);
+  max-height: var(--radix-select-content-available-height, 50vh);
+  overflow-y: auto;
 }
 
 .item {
