@@ -42,7 +42,7 @@ export const PRESETS: Preset[] = [
       branchDroop: 0.08, apicalDominance: 0.18,
       crownShape: 'ovoid', crownFullness: 0.85, leafClusterRadius: 2.4,
       leafDensity: 0.82, interiorLeafPruning: 0.3,
-      minBranchThickness: 1, leafCleanup: 0.62, symmetryAssist: 0.55, buildabilityBias: 0.72,
+      minBranchThickness: 1, leafCleanup: 1, symmetryAssist: 0.55, buildabilityBias: 0.72,
     },
   },
   {
@@ -72,7 +72,7 @@ export const PRESETS: Preset[] = [
       branchDroop: 0.14, apicalDominance: 0.12,
       crownShape: 'irregular', crownFullness: 0.92, leafClusterRadius: 2.7,
       leafDensity: 0.9, interiorLeafPruning: 0.22,
-      minBranchThickness: 1, leafCleanup: 0.66, symmetryAssist: 0.45, buildabilityBias: 0.76,
+      minBranchThickness: 1, leafCleanup: 1, symmetryAssist: 0.45, buildabilityBias: 0.76,
     },
   },
   {
@@ -102,7 +102,7 @@ export const PRESETS: Preset[] = [
       branchDroop: 0.16, apicalDominance: 0.98,
       crownShape: 'conical', crownFullness: 0.95, leafClusterRadius: 1.6,
       leafDensity: 0.94, interiorLeafPruning: 0.24,
-      minBranchThickness: 1, leafCleanup: 0.7, symmetryAssist: 0.7, buildabilityBias: 0.82,
+      minBranchThickness: 1, leafCleanup: 1, symmetryAssist: 0.7, buildabilityBias: 0.82,
     },
   },
   {
@@ -132,7 +132,7 @@ export const PRESETS: Preset[] = [
       branchDroop: 0.04, apicalDominance: 0.68,
       crownShape: 'ovoid', crownFullness: 0.76, leafClusterRadius: 1.8,
       leafDensity: 0.74, interiorLeafPruning: 0.42,
-      minBranchThickness: 1, leafCleanup: 0.72, symmetryAssist: 0.6, buildabilityBias: 0.84,
+      minBranchThickness: 1, leafCleanup: 1, symmetryAssist: 0.6, buildabilityBias: 0.84,
     },
   },
   {
@@ -162,7 +162,7 @@ export const PRESETS: Preset[] = [
       branchDroop: 0.04, apicalDominance: 0.12,
       crownShape: 'vase', crownFullness: 0.78, leafClusterRadius: 2.4,
       leafDensity: 0.75, interiorLeafPruning: 0.36,
-      minBranchThickness: 1, leafCleanup: 0.7, symmetryAssist: 0.4, buildabilityBias: 0.8,
+      minBranchThickness: 1, leafCleanup: 1, symmetryAssist: 0.4, buildabilityBias: 0.8,
     },
   },
   {
@@ -192,7 +192,7 @@ export const PRESETS: Preset[] = [
       branchDroop: 0.12, apicalDominance: 0.46,
       crownShape: 'ovoid', crownFullness: 0.85, leafClusterRadius: 2.3,
       leafDensity: 0.84, interiorLeafPruning: 0.26,
-      minBranchThickness: 1, leafCleanup: 0.62, symmetryAssist: 0.4, buildabilityBias: 0.7,
+      minBranchThickness: 1, leafCleanup: 1, symmetryAssist: 0.4, buildabilityBias: 0.7,
     },
   },
   {
@@ -222,7 +222,7 @@ export const PRESETS: Preset[] = [
       branchDroop: 0.18, apicalDominance: 0.16,
       crownShape: 'vase', crownFullness: 0.88, leafClusterRadius: 2.4,
       leafDensity: 0.88, interiorLeafPruning: 0.24,
-      minBranchThickness: 1, leafCleanup: 0.64, symmetryAssist: 0.5, buildabilityBias: 0.74,
+      minBranchThickness: 1, leafCleanup: 1, symmetryAssist: 0.5, buildabilityBias: 0.74,
     },
   },
   {
@@ -252,7 +252,7 @@ export const PRESETS: Preset[] = [
       branchDroop: 0.3, apicalDominance: 0.14,
       crownShape: 'irregular', crownFullness: 0.82, leafClusterRadius: 2.3,
       leafDensity: 0.82, interiorLeafPruning: 0.18,
-      minBranchThickness: 1, leafCleanup: 0.56, symmetryAssist: 0.35, buildabilityBias: 0.68,
+      minBranchThickness: 1, leafCleanup: 1, symmetryAssist: 0.35, buildabilityBias: 0.68,
     },
   },
   {
@@ -282,7 +282,7 @@ export const PRESETS: Preset[] = [
       branchDroop: 0.02, apicalDominance: 0.1,
       crownShape: 'vase', crownFullness: 0.65, leafClusterRadius: 2,
       leafDensity: 0.65, interiorLeafPruning: 0.48,
-      minBranchThickness: 1, leafCleanup: 0.74, symmetryAssist: 0.5, buildabilityBias: 0.86,
+      minBranchThickness: 1, leafCleanup: 1, symmetryAssist: 0.5, buildabilityBias: 0.86,
     },
   },
   {
@@ -312,7 +312,7 @@ export const PRESETS: Preset[] = [
       branchDroop: 0.24, apicalDominance: 0.08,
       crownShape: 'irregular', crownFullness: 0.82, leafClusterRadius: 2.4,
       leafDensity: 0.82, interiorLeafPruning: 0.22,
-      minBranchThickness: 1, leafCleanup: 0.54, symmetryAssist: 0.02, buildabilityBias: 0.66,
+      minBranchThickness: 1, leafCleanup: 1, symmetryAssist: 0.02, buildabilityBias: 0.66,
     },
   },
 ];

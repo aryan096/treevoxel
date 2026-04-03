@@ -142,7 +142,7 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     description: 'How strongly the central leader suppresses lateral branch growth.',
     effectIncrease: 'Stronger central leader, conical crown.',
     effectDecrease: 'Weaker leader, broader crown with competing branches.',
-    min: 0, max: 1.0, step: 0.05, defaultValue: 0.5,
+    min: 0, max: 1.0, step: 0.05, defaultValue: 1.0,
   },
   // --- Crown ---
   {
