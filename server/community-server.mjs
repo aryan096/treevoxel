@@ -159,6 +159,13 @@ const presetMinecraftPalette = {
 const allowedPresets = new Set(Object.keys(presetBlockColors));
 const allowedCrownShapes = new Set(['conical', 'spherical', 'ovoid', 'columnar', 'vase', 'weeping', 'irregular']);
 const allowedBlockTypes = new Set(['log', 'branch', 'leaf', 'fence']);
+// Defaults for params added after initial launch — used as fallbacks when loading
+// old submissions that predate these fields.
+const legacyParamDefaults = {
+  leafCleanup: 0.5,
+  symmetryAssist: 0.3,
+  buildabilityBias: 0.5,
+};
 const requiredNumericParams = [
   'randomSeed',
   'colorRandomness',
@@ -236,7 +243,7 @@ function normalizeParams(value) {
 
   const params = {};
   for (const key of requiredNumericParams) {
-    const raw = value[key];
+    const raw = value[key] ?? legacyParamDefaults[key];
     if (typeof raw !== 'number' || !Number.isFinite(raw)) {
       throw new Error(`Param "${key}" is invalid.`);
     }
