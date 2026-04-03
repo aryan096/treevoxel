@@ -146,7 +146,7 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
       {showGrid && (
         <Grid
           args={[60, 60]}
-          position={[0, -0.01, 0]}
+          position={[0, 0, 0]}
           cellSize={1}
           cellThickness={0.5}
           cellColor={activePalette.gridCell}

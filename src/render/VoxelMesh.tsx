@@ -196,7 +196,7 @@ export default function VoxelMesh() {
       atlasTexture,
       MINECRAFT_ATLAS_DEFINITION.atlasGridSize,
       leafBlockTextures,
-      { alphaTest: 0.5, doubleSided: true, tintColor: leafTintColor, tintLightness: 0.4 },
+      { alphaTest: 0.5, doubleSided: true, tintColor: leafTintColor },
     );
   }, [atlasTexture, leafBlockTextures, leafTintColor, textureSet]);
 

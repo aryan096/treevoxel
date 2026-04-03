@@ -6,7 +6,7 @@ import { useTreeStore } from '../store/treeStore';
 import { DEFAULT_DIORAMA_GRASS_TINT, getMinecraftGrassTintColor } from './minecraftTints';
 
 const DIORAMA_MARGIN = 5;
-const DIORAMA_Y = 0;
+const DIORAMA_Y = -0.02;
 
 export default function DioramaGround() {
   const textureSet = useTreeStore((s) => s.textureSet);
@@ -47,7 +47,7 @@ function MinecraftDioramaGround() {
     grassTexture.wrapS = THREE.RepeatWrapping;
     grassTexture.wrapT = THREE.RepeatWrapping;
     grassTexture.repeat.set(size.width, size.depth);
-    grassTexture.minFilter = THREE.NearestFilter;
+    grassTexture.minFilter = THREE.NearestMipmapLinearFilter;
     grassTexture.magFilter = THREE.NearestFilter;
     grassTexture.colorSpace = THREE.SRGBColorSpace;
     grassTexture.needsUpdate = true;

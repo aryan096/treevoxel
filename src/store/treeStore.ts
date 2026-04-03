@@ -18,6 +18,7 @@ import {
   applyPresetBlockColors,
   applyPresetMinecraftPalette,
 } from '../core/presets';
+import { getPresetById } from '../core/minecraftBlocks';
 import { generateTree, type GenerationResult } from '../core/generate';
 import { buildRenderBuffer } from '../core/renderBuffer';
 import type { TextureSetId } from '../textures/textureSet';
@@ -187,7 +188,18 @@ export const useTreeStore = create<TreeState>((set) => ({
 
       const minecraftPalette = { ...state.minecraftPalette, [type]: blockId };
       if (type === 'fence') {
-        return { minecraftPalette };
+        const fencePreset = getPresetById(blockId);
+        const fenceColor = fencePreset?.approximateHex ?? state.blockColors.fence;
+        const blockColors = { ...state.blockColors, fence: fenceColor };
+        return {
+          minecraftPalette,
+          blockColors,
+          buffer: buildRenderBuffer(
+            state.voxels,
+            blockColors,
+            getEffectiveColorRandomness(state.textureSet, state.params.colorRandomness),
+          ),
+        };
       }
 
       const blockColors = { ...state.blockColors, [type]: color };
