@@ -6,19 +6,18 @@ import { useTreeStore } from '../store/treeStore';
 export default function LayerHighlight() {
   const activeLayer = useTreeStore((s) => s.activeLayerIndex);
   const voxels = useTreeStore((s) => s.voxels);
-  const darkMode = useTreeStore((s) => s.display.darkMode);
   const invalidate = useThree((s) => s.invalidate);
 
   useEffect(() => {
     invalidate();
-  }, [activeLayer, invalidate, darkMode]);
+  }, [activeLayer, invalidate]);
 
   const hasVoxels = voxels.layers.size > 0;
   const width = hasVoxels ? voxels.bounds.maxX - voxels.bounds.minX + 2 : 1;
   const depth = hasVoxels ? voxels.bounds.maxZ - voxels.bounds.minZ + 2 : 1;
   const centerX = hasVoxels ? (voxels.bounds.minX + voxels.bounds.maxX) / 2 : 0;
   const centerZ = hasVoxels ? (voxels.bounds.minZ + voxels.bounds.maxZ) / 2 : 0;
-  const sliceColor = darkMode ? '#b78a52' : '#8f6538';
+  const sliceColor = '#8f6538';
   const slabGeometry = useMemo(() => new THREE.BoxGeometry(width, 0.98, depth), [depth, width]);
   const slabEdges = useMemo(() => new THREE.EdgesGeometry(slabGeometry), [slabGeometry]);
 

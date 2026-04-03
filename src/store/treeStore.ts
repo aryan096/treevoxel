@@ -30,7 +30,6 @@ type DisplayToggles = {
   showLeaf: boolean;
   showGrid: boolean;
   showAxes: boolean;
-  darkMode: boolean;
 };
 
 type TreeState = {
@@ -99,14 +98,13 @@ export const useTreeStore = create<TreeState>((set) => ({
   blockColors: initialBlockColors,
   minecraftPalette: initialMinecraftPalette,
   textureSet: 'flat_color',
-  renderStyle: 'flat',
+  renderStyle: 'diorama',
   display: {
     showLog: true,
     showBranch: true,
     showLeaf: true,
-    showGrid: true,
-    showAxes: true,
-    darkMode: false,
+    showGrid: false,
+    showAxes: false,
   },
 
   model: initialResult.model,

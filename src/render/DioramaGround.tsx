@@ -5,7 +5,7 @@ import * as THREE from 'three';
 import { useTreeStore } from '../store/treeStore';
 import { DEFAULT_DIORAMA_GRASS_TINT, getMinecraftGrassTintColor } from './minecraftTints';
 
-const DIORAMA_MARGIN = 5;
+const DIORAMA_MARGIN = 500;
 const DIORAMA_Y = -0.02;
 
 export default function DioramaGround() {
@@ -71,8 +71,8 @@ function getGroundSize(bounds: {
   minZ: number;
   maxZ: number;
 }) {
-  const width = Math.max(12, bounds.maxX - bounds.minX + 1 + DIORAMA_MARGIN * 2);
-  const depth = Math.max(12, bounds.maxZ - bounds.minZ + 1 + DIORAMA_MARGIN * 2);
+  const width = bounds.maxX - bounds.minX + 1 + DIORAMA_MARGIN * 2;
+  const depth = bounds.maxZ - bounds.minZ + 1 + DIORAMA_MARGIN * 2;
 
   return {
     width,

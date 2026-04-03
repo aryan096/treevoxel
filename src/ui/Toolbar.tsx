@@ -7,7 +7,6 @@ const TOGGLE_LABELS: Record<string, string> = {
   showLeaf: 'Leaves',
   showGrid: 'Grid',
   showAxes: 'Axes',
-  darkMode: 'Dark BG',
 };
 
 export default function Toolbar() {

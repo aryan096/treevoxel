@@ -9,7 +9,7 @@ const DEFAULT_PRESET_COLORS: BlockColors = {
 
 export const DEFAULT_MINECRAFT_PALETTE: MinecraftPalette = {
   log: 'oak_log',
-  branch: 'stripped_oak_log',
+  branch: 'oak_log',
   fence: 'oak_fence',
   leaf: 'oak_leaves',
 };
@@ -28,8 +28,8 @@ export const PRESETS: Preset[] = [
     },
     minecraftPalette: {
       log: 'oak_log',
-      branch: 'stripped_oak_log',
-      fence: 'oak_fence',
+      branch: 'oak_log',
+      fence: 'dark_oak_fence',
       leaf: 'oak_leaves',
     },
     params: {
@@ -58,7 +58,7 @@ export const PRESETS: Preset[] = [
     },
     minecraftPalette: {
       log: 'dark_oak_log',
-      branch: 'stripped_dark_oak_log',
+      branch: 'dark_oak_log',
       fence: 'dark_oak_fence',
       leaf: 'dark_oak_leaves',
     },
@@ -88,8 +88,8 @@ export const PRESETS: Preset[] = [
     },
     minecraftPalette: {
       log: 'spruce_log',
-      branch: 'stripped_spruce_log',
-      fence: 'spruce_fence',
+      branch: 'spruce_log',
+      fence: 'dark_oak_fence',
       leaf: 'spruce_leaves',
     },
     params: {
@@ -118,8 +118,8 @@ export const PRESETS: Preset[] = [
     },
     minecraftPalette: {
       log: 'birch_log',
-      branch: 'stripped_birch_log',
-      fence: 'birch_fence',
+      branch: 'birch_log',
+      fence: 'oak_fence',
       leaf: 'birch_leaves',
     },
     params: {
@@ -148,8 +148,8 @@ export const PRESETS: Preset[] = [
     },
     minecraftPalette: {
       log: 'acacia_log',
-      branch: 'stripped_acacia_log',
-      fence: 'acacia_fence',
+      branch: 'acacia_log',
+      fence: 'spruce_fence',
       leaf: 'acacia_leaves',
     },
     params: {
@@ -178,7 +178,7 @@ export const PRESETS: Preset[] = [
     },
     minecraftPalette: {
       log: 'jungle_log',
-      branch: 'stripped_jungle_log',
+      branch: 'jungle_log',
       fence: 'jungle_fence',
       leaf: 'jungle_leaves',
     },
@@ -208,7 +208,7 @@ export const PRESETS: Preset[] = [
     },
     minecraftPalette: {
       log: 'cherry_log',
-      branch: 'stripped_cherry_log',
+      branch: 'cherry_log',
       fence: 'cherry_fence',
       leaf: 'cherry_leaves',
     },
@@ -238,7 +238,7 @@ export const PRESETS: Preset[] = [
     },
     minecraftPalette: {
       log: 'mangrove_log',
-      branch: 'stripped_mangrove_log',
+      branch: 'mangrove_log',
       fence: 'mangrove_fence',
       leaf: 'mangrove_leaves',
     },
@@ -268,7 +268,7 @@ export const PRESETS: Preset[] = [
     },
     minecraftPalette: {
       log: 'acacia_log',
-      branch: 'stripped_acacia_log',
+      branch: 'acacia_log',
       fence: 'acacia_fence',
       leaf: 'acacia_leaves',
     },
@@ -298,7 +298,7 @@ export const PRESETS: Preset[] = [
     },
     minecraftPalette: {
       log: 'oak_log',
-      branch: 'stripped_acacia_log',
+      branch: 'oak_log',
       fence: 'acacia_fence',
       leaf: 'oak_leaves',
     },

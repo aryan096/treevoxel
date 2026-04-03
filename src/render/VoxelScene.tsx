@@ -1,5 +1,5 @@
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, Grid, GizmoHelper, GizmoViewport } from '@react-three/drei';
+import { OrbitControls, Grid, GizmoHelper, GizmoViewport, Sky } from '@react-three/drei';
 import * as THREE from 'three';
 import VoxelMesh from './VoxelMesh';
 import LayerHighlight from './LayerHighlight';
@@ -60,28 +60,19 @@ const LIGHTING_PRESETS: Record<RenderStyleId, LightingPreset> = {
 };
 
 export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProps) {
-  const darkMode = useTreeStore((s) => s.display.darkMode);
   const showGrid = useTreeStore((s) => s.display.showGrid);
   const showAxes = useTreeStore((s) => s.display.showAxes);
   const height = useTreeStore((s) => s.params.height);
   const renderStyle = useTreeStore((s) => s.renderStyle);
-  const scenePalette = darkMode
-    ? {
-        background: '#17120d',
-        gridCell: '#4f4334',
-        gridSection: '#7c694f',
-        axisColors: ['#9b5a3c', '#74845a', '#b08b57'] as [string, string, string],
-        axisLabel: '#eadfcf',
-        rimLight: '#c2ad93',
-      }
-    : {
-        background: '#d9cfbe',
-        gridCell: '#a8967f',
-        gridSection: '#826e55',
-        axisColors: ['#a85f42', '#6f8150', '#9f7d4c'] as [string, string, string],
-        axisLabel: '#2f2418',
-        rimLight: '#b28d69',
-      };
+  const textureSet = useTreeStore((s) => s.textureSet);
+  const scenePalette = {
+    background: '#d9cfbe',
+    gridCell: '#a8967f',
+    gridSection: '#826e55',
+    axisColors: ['#a85f42', '#6f8150', '#9f7d4c'] as [string, string, string],
+    axisLabel: '#2f2418',
+    rimLight: '#b28d69',
+  };
   const dioramaPalette = {
     background: '#0f1216',
     gridCell: '#37414a',
@@ -92,7 +83,13 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
   };
   const activePalette = renderStyle === 'diorama' ? dioramaPalette : scenePalette;
   const lightingPreset = LIGHTING_PRESETS[renderStyle];
-  const background = lightingPreset.background ?? activePalette.background;
+  const isMinecraft = textureSet === 'minecraft';
+  const isDiorama = renderStyle === 'diorama';
+  const dioramaFogColor = isMinecraft ? '#a8d0ff' : '#c2d8f0';
+  const dioramaBackground = isMinecraft ? '#a8d0ff' : '#87ceeb';
+  const background = isDiorama
+    ? dioramaBackground
+    : (lightingPreset.background ?? activePalette.background);
 
   return (
     <Canvas
@@ -109,6 +106,7 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
       shadows
     >
       <color attach="background" args={[background]} />
+      {isDiorama && <fogExp2 attach="fog" args={[dioramaFogColor, 0.0015]} />}
       <hemisphereLight
         args={[
           lightingPreset.hemisphereSky,
@@ -139,8 +137,25 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
         color={activePalette.rimLight}
       />
 
+      {isDiorama && isMinecraft && (
+        <mesh>
+          <sphereGeometry args={[450, 64, 32]} />
+          <meshBasicMaterial color="#a8d0ff" side={THREE.BackSide} depthWrite={false} fog={false} />
+        </mesh>
+      )}
+      {isDiorama && !isMinecraft && (
+        <Sky
+          distance={450}
+          sunPosition={[1, 1, 0.5]}
+          rayleigh={0.8}
+          turbidity={3}
+          mieCoefficient={0.005}
+          mieDirectionalG={0.8}
+        />
+      )}
+
       <VoxelMesh />
-      {renderStyle === 'diorama' ? <DioramaGround /> : null}
+      {isDiorama ? <DioramaGround /> : null}
       {showSliceHighlight ? <LayerHighlight /> : null}
 
       {showGrid && (
@@ -170,7 +185,7 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
       )}
 
       <OrbitControls
-        target={[0, height / 2, 0]}
+        target={[0, height / 1.75, 0]}
         enableDamping
         dampingFactor={0.1}
         minDistance={5}
