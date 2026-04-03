@@ -6,6 +6,8 @@ import { PARAMETER_DEFS, CATEGORICAL_PARAMS } from '../core/parameters';
 import { exportJSON, exportTextGuide, exportLitematic } from '../core/export';
 import { getPresetsForCategory } from '../core/minecraftBlocks';
 import { useTreeStore } from '../store/treeStore';
+import type { TextureSetId } from '../textures/textureSet';
+import { RENDER_STYLE_LABELS, type RenderStyleId } from '../render/renderStyle';
 import PresetSelector from './PresetSelector';
 import ParameterGroup from './ParameterGroup';
 import ParameterSlider from './ParameterSlider';
@@ -13,12 +15,17 @@ import styles from './ParameterPanel.module.css';
 
 const GROUP_ORDER = ['dimensions', 'trunk', 'branching', 'crown', 'environment'];
 const FEATURED_PARAM_IDS = ['colorRandomness', 'randomSeed'] as const;
+const HIDDEN_PARAM_IDS = ['minBranchThickness', 'buildabilityBias'] as const;
 const MC_BLOCK_TYPES = ['log', 'branch', 'leaf'] as const;
 type McBlockType = (typeof MC_BLOCK_TYPES)[number];
 const BLOCK_TYPE_LABELS: Record<McBlockType, string> = {
   log: 'Log',
   branch: 'Branch',
   leaf: 'Leaf',
+};
+const TEXTURE_SET_LABELS: Record<TextureSetId, string> = {
+  flat_color: 'Flat Color',
+  minecraft: 'Minecraft',
 };
 const SCROLLBAR_WIDTH = 7;
 
@@ -50,8 +57,12 @@ export default function ParameterPanel() {
   const voxels = useTreeStore((s) => s.voxels);
   const blockColors = useTreeStore((s) => s.blockColors);
   const minecraftPalette = useTreeStore((s) => s.minecraftPalette);
+  const textureSet = useTreeStore((s) => s.textureSet);
+  const renderStyle = useTreeStore((s) => s.renderStyle);
   const setBlockColor = useTreeStore((s) => s.setBlockColor);
   const setMinecraftPaletteEntry = useTreeStore((s) => s.setMinecraftPaletteEntry);
+  const setTextureSet = useTreeStore((s) => s.setTextureSet);
+  const setRenderStyle = useTreeStore((s) => s.setRenderStyle);
 
   const grouped = new Map<string, typeof PARAMETER_DEFS>();
   for (const p of PARAMETER_DEFS) {
@@ -95,6 +106,38 @@ export default function ParameterPanel() {
             <div className={styles.colorSectionHeader}>
               <span className={styles.colorSectionTitle}>Block Colors</span>
               <span className={styles.colorSectionCount}>3</span>
+            </div>
+            <div className={styles.textureSetField}>
+              <span className={styles.colorLabel}>Rendering Style</span>
+              <div className={styles.textureSetToggle} role="group" aria-label="Rendering style">
+                {(Object.keys(TEXTURE_SET_LABELS) as TextureSetId[]).map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`${styles.textureSetButton} ${textureSet === id ? styles.textureSetButtonActive : ''}`}
+                    onClick={() => setTextureSet(id)}
+                    aria-pressed={textureSet === id}
+                  >
+                    {TEXTURE_SET_LABELS[id]}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className={styles.textureSetField}>
+              <span className={styles.colorLabel}>Scene Style</span>
+              <div className={styles.textureSetToggle} role="group" aria-label="Scene style">
+                {(Object.keys(RENDER_STYLE_LABELS) as RenderStyleId[]).map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`${styles.textureSetButton} ${renderStyle === id ? styles.textureSetButtonActive : ''}`}
+                    onClick={() => setRenderStyle(id)}
+                    aria-pressed={renderStyle === id}
+                  >
+                    {RENDER_STYLE_LABELS[id]}
+                  </button>
+                ))}
+              </div>
             </div>
             <div className={styles.colorGrid}>
               {MC_BLOCK_TYPES.map((type) => {
@@ -188,6 +231,7 @@ export default function ParameterPanel() {
                 key={param.id}
                 param={param}
                 value={(params as unknown as Record<string, number>)[param.id] ?? param.defaultValue}
+                disabled={param.id === 'colorRandomness' && textureSet === 'minecraft'}
                 onChange={(value) => setParam(param.id, value)}
                 action={param.id === 'randomSeed'
                   ? {
@@ -202,7 +246,9 @@ export default function ParameterPanel() {
 
           {GROUP_ORDER.map((group) => {
             const groupParams = (grouped.get(group) || []).filter(
-              (param) => !FEATURED_PARAM_IDS.includes(param.id as (typeof FEATURED_PARAM_IDS)[number]),
+              (param) =>
+                !FEATURED_PARAM_IDS.includes(param.id as (typeof FEATURED_PARAM_IDS)[number]) &&
+                !HIDDEN_PARAM_IDS.includes(param.id as (typeof HIDDEN_PARAM_IDS)[number]),
             );
             if (!groupParams) return null;
             if (groupParams.length === 0) return null;

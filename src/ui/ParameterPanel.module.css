@@ -52,6 +52,51 @@
   gap: 10px;
 }
 
+.textureSetField {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.textureSetToggle {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0;
+  width: 100%;
+  border: 1px solid rgba(138, 125, 106, 0.2);
+  border-radius: 8px;
+  overflow: hidden;
+  background: #261f16;
+}
+
+.textureSetButton {
+  flex: 1 1 0;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: 'Fraunces', Georgia, serif;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.textureSetButton + .textureSetButton {
+  border-left: 1px solid rgba(138, 125, 106, 0.2);
+}
+
+.textureSetButton:hover {
+  background: #3a3025;
+  color: var(--text-secondary);
+}
+
+.textureSetButtonActive {
+  background: #3a3025;
+  color: var(--text-primary);
+}
+
 .colorField {
   display: grid;
   gap: 6px;

@@ -1,7 +1,11 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
+import { createTexturedVoxelMaterial } from './texturedVoxelMaterial';
+import { getLeafTintColor } from './leafTint';
 import { useTreeStore } from '../store/treeStore';
+import { loadAtlas } from '../textures/loadAtlas';
+import { MINECRAFT_ATLAS_DEFINITION } from '../textures/minecraftAtlas';
 
 type MeshRefs = {
   log: THREE.InstancedMesh | null;
@@ -10,6 +14,32 @@ type MeshRefs = {
   fencePost: THREE.InstancedMesh | null;
   fenceArm: THREE.InstancedMesh | null;
 };
+
+type CubeInstanceData = {
+  counts: {
+    log: number;
+    branch: number;
+    leaf: number;
+  };
+  axes: {
+    log: Float32Array;
+    branch: Float32Array;
+    leaf: Float32Array;
+  };
+};
+
+const MATERIAL_ROUGHNESS = {
+  log: 0.95,
+  branch: 0.92,
+  leaf: 0.85,
+  fence: 0.92,
+} as const;
+
+const DEFAULT_BLOCK_TEXTURES = {
+  log: MINECRAFT_ATLAS_DEFINITION.blockTextures.oak_log,
+  branch: MINECRAFT_ATLAS_DEFINITION.blockTextures.oak_log,
+  leaf: MINECRAFT_ATLAS_DEFINITION.blockTextures.oak_leaves,
+} as const;
 
 export default function VoxelMesh() {
   const meshRefs = useRef<MeshRefs>({
@@ -23,16 +53,21 @@ export default function VoxelMesh() {
   const showLog = useTreeStore((s) => s.display.showLog);
   const showBranch = useTreeStore((s) => s.display.showBranch);
   const showLeaf = useTreeStore((s) => s.display.showLeaf);
+  const textureSet = useTreeStore((s) => s.textureSet);
+  const minecraftPalette = useTreeStore((s) => s.minecraftPalette);
   const invalidate = useThree((s) => s.invalidate);
+  const isMinecraftTextureMode = textureSet === 'minecraft';
 
-  const geometry = useMemo(() => new THREE.BoxGeometry(0.97, 0.97, 0.97), []);
+  const logGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
+  const branchGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
+  const leafGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
   const fencePostGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
   const fenceArmGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
   const logMaterial = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        roughness: 0.95,
+        roughness: MATERIAL_ROUGHNESS.log,
         metalness: 0,
       }),
     [],
@@ -41,7 +76,7 @@ export default function VoxelMesh() {
     () =>
       new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        roughness: 0.92,
+        roughness: MATERIAL_ROUGHNESS.branch,
         metalness: 0,
       }),
     [],
@@ -50,7 +85,7 @@ export default function VoxelMesh() {
     () =>
       new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        roughness: 0.85,
+        roughness: MATERIAL_ROUGHNESS.leaf,
         metalness: 0,
       }),
     [],
@@ -59,29 +94,152 @@ export default function VoxelMesh() {
     () =>
       new THREE.MeshStandardMaterial({
         color: 0xffffff,
-        roughness: 0.92,
+        roughness: MATERIAL_ROUGHNESS.fence,
         metalness: 0,
       }),
     [],
   );
-  const cubeCounts = useMemo(() => {
-    let log = 0;
-    let branch = 0;
-    let leaf = 0;
+
+  const cubeData = useMemo<CubeInstanceData>(() => {
+    let logCount = 0;
+    let branchCount = 0;
+    let leafCount = 0;
 
     for (let i = 0; i < buffer.count; i++) {
       const typeIdx = buffer.types[i];
       if (typeIdx === 0) {
-        log++;
+        logCount++;
       } else if (typeIdx === 1) {
-        branch++;
+        branchCount++;
       } else if (typeIdx === 2) {
-        leaf++;
+        leafCount++;
       }
     }
 
-    return { log, branch, leaf };
+    const logAxes = new Float32Array(Math.max(1, logCount));
+    const branchAxes = new Float32Array(Math.max(1, branchCount));
+    const leafAxes = new Float32Array(Math.max(1, leafCount));
+
+    logCount = 0;
+    branchCount = 0;
+    leafCount = 0;
+
+    for (let i = 0; i < buffer.count; i++) {
+      const typeIdx = buffer.types[i];
+      if (typeIdx === 0) {
+        logAxes[logCount] = buffer.axes[i] ?? 0;
+        logCount++;
+      } else if (typeIdx === 1) {
+        branchAxes[branchCount] = buffer.axes[i] ?? 0;
+        branchCount++;
+      } else if (typeIdx === 2) {
+        leafAxes[leafCount] = buffer.axes[i] ?? 0;
+        leafCount++;
+      }
+    }
+
+    return {
+      counts: {
+        log: logCount,
+        branch: branchCount,
+        leaf: leafCount,
+      },
+      axes: {
+        log: logAxes,
+        branch: branchAxes,
+        leaf: leafAxes,
+      },
+    };
   }, [buffer]);
+
+  const atlasTexture = useMemo(() => loadAtlas(MINECRAFT_ATLAS_DEFINITION.atlasUrl), []);
+  const logBlockTextures =
+    MINECRAFT_ATLAS_DEFINITION.blockTextures[minecraftPalette.log] ?? DEFAULT_BLOCK_TEXTURES.log;
+  const branchBlockTextures =
+    MINECRAFT_ATLAS_DEFINITION.blockTextures[minecraftPalette.branch] ?? DEFAULT_BLOCK_TEXTURES.branch;
+  const leafBlockTextures =
+    MINECRAFT_ATLAS_DEFINITION.blockTextures[minecraftPalette.leaf] ?? DEFAULT_BLOCK_TEXTURES.leaf;
+  const leafTintColor = getLeafTintColor(minecraftPalette.leaf);
+
+  const texturedLogMaterial = useMemo(() => {
+    if (textureSet !== 'minecraft' || !atlasTexture) {
+      return null;
+    }
+
+    return createTexturedVoxelMaterial(
+      atlasTexture,
+      MINECRAFT_ATLAS_DEFINITION.atlasGridSize,
+      logBlockTextures,
+      {},
+    );
+  }, [atlasTexture, logBlockTextures, textureSet]);
+
+  const texturedBranchMaterial = useMemo(() => {
+    if (textureSet !== 'minecraft' || !atlasTexture) {
+      return null;
+    }
+
+    return createTexturedVoxelMaterial(
+      atlasTexture,
+      MINECRAFT_ATLAS_DEFINITION.atlasGridSize,
+      branchBlockTextures,
+      {},
+    );
+  }, [atlasTexture, branchBlockTextures, textureSet]);
+
+  const texturedLeafMaterial = useMemo(() => {
+    if (textureSet !== 'minecraft' || !atlasTexture) {
+      return null;
+    }
+
+    return createTexturedVoxelMaterial(
+      atlasTexture,
+      MINECRAFT_ATLAS_DEFINITION.atlasGridSize,
+      leafBlockTextures,
+      { alphaTest: 0.5, doubleSided: true, tintColor: leafTintColor, tintLightness: 0.4 },
+    );
+  }, [atlasTexture, leafBlockTextures, leafTintColor, textureSet]);
+
+  useEffect(() => () => {
+    logGeometry.dispose();
+    branchGeometry.dispose();
+    leafGeometry.dispose();
+    fencePostGeometry.dispose();
+    fenceArmGeometry.dispose();
+    logMaterial.dispose();
+    branchMaterial.dispose();
+    leafMaterial.dispose();
+    fenceMaterial.dispose();
+  }, [branchGeometry, branchMaterial, fenceArmGeometry, fenceMaterial, fencePostGeometry, leafGeometry, leafMaterial, logGeometry, logMaterial]);
+
+  useEffect(() => () => {
+    texturedLogMaterial?.dispose();
+  }, [texturedLogMaterial]);
+
+  useEffect(() => () => {
+    texturedBranchMaterial?.dispose();
+  }, [texturedBranchMaterial]);
+
+  useEffect(() => () => {
+    texturedLeafMaterial?.dispose();
+  }, [texturedLeafMaterial]);
+
+  useEffect(() => {
+    setAxisAttribute(logGeometry, cubeData.axes.log);
+    setAxisAttribute(branchGeometry, cubeData.axes.branch);
+    setAxisAttribute(leafGeometry, cubeData.axes.leaf);
+    invalidate();
+  }, [branchGeometry, cubeData.axes.branch, cubeData.axes.leaf, cubeData.axes.log, invalidate, leafGeometry, logGeometry]);
+
+  const activeLogMaterial = isMinecraftTextureMode && texturedLogMaterial ? texturedLogMaterial : logMaterial;
+  const activeBranchMaterial = isMinecraftTextureMode && texturedBranchMaterial ? texturedBranchMaterial : branchMaterial;
+  const activeLeafMaterial = isMinecraftTextureMode && texturedLeafMaterial ? texturedLeafMaterial : leafMaterial;
+  const activeFenceMaterial = fenceMaterial;
+  const maxLogInstances = Math.max(1, cubeData.counts.log);
+  const maxBranchInstances = Math.max(1, cubeData.counts.branch);
+  const maxLeafInstances = Math.max(1, cubeData.counts.leaf);
+  const maxFenceInstances = Math.max(1, buffer.fencePostCount);
+  const maxFenceArmInstances = Math.max(1, buffer.fenceArmCount);
 
   useEffect(() => {
     const logMesh = meshRefs.current.log;
@@ -93,6 +251,7 @@ export default function VoxelMesh() {
 
     const matrix = new THREE.Matrix4();
     const color = new THREE.Color();
+    const neutralColor = new THREE.Color(0xffffff);
     let logCount = 0;
     let branchCount = 0;
     let leafCount = 0;
@@ -104,15 +263,15 @@ export default function VoxelMesh() {
 
       if (typeIdx === 0) {
         logMesh.setMatrixAt(logCount, matrix);
-        logMesh.setColorAt(logCount, color);
+        logMesh.setColorAt(logCount, isMinecraftTextureMode ? neutralColor : color);
         logCount++;
       } else if (typeIdx === 1) {
         branchMesh.setMatrixAt(branchCount, matrix);
-        branchMesh.setColorAt(branchCount, color);
+        branchMesh.setColorAt(branchCount, isMinecraftTextureMode ? neutralColor : color);
         branchCount++;
       } else if (typeIdx === 2) {
         leafMesh.setMatrixAt(leafCount, matrix);
-        leafMesh.setColorAt(leafCount, color);
+        leafMesh.setColorAt(leafCount, isMinecraftTextureMode ? neutralColor : color);
         leafCount++;
       }
     }
@@ -121,14 +280,14 @@ export default function VoxelMesh() {
       matrix.fromArray(buffer.fencePostMatrices, i * 16);
       color.fromArray(buffer.fencePostColors, i * 3);
       fencePostMesh.setMatrixAt(i, matrix);
-      fencePostMesh.setColorAt(i, color);
+        fencePostMesh.setColorAt(i, color);
     }
 
     for (let i = 0; i < buffer.fenceArmCount; i++) {
       matrix.fromArray(buffer.fenceArmMatrices, i * 16);
       color.fromArray(buffer.fenceArmColors, i * 3);
       fenceArmMesh.setMatrixAt(i, matrix);
-      fenceArmMesh.setColorAt(i, color);
+        fenceArmMesh.setColorAt(i, color);
     }
 
     logMesh.count = logCount;
@@ -149,7 +308,7 @@ export default function VoxelMesh() {
     if (fenceArmMesh.instanceColor) fenceArmMesh.instanceColor.needsUpdate = true;
 
     invalidate();
-  }, [buffer, invalidate]);
+  }, [activeBranchMaterial, activeFenceMaterial, activeLeafMaterial, activeLogMaterial, buffer, invalidate, isMinecraftTextureMode]);
 
   useEffect(() => {
     const logMesh = meshRefs.current.log;
@@ -167,11 +326,9 @@ export default function VoxelMesh() {
     invalidate();
   }, [showBranch, showLeaf, showLog, invalidate]);
 
-  const maxLogInstances = Math.max(1, cubeCounts.log);
-  const maxBranchInstances = Math.max(1, cubeCounts.branch);
-  const maxLeafInstances = Math.max(1, cubeCounts.leaf);
-  const maxFenceInstances = Math.max(1, buffer.fencePostCount);
-  const maxFenceArmInstances = Math.max(1, buffer.fenceArmCount);
+  useEffect(() => {
+    invalidate();
+  }, [invalidate, textureSet, texturedBranchMaterial, texturedLeafMaterial, texturedLogMaterial]);
 
   return (
     <>
@@ -179,7 +336,7 @@ export default function VoxelMesh() {
         ref={(mesh) => {
           meshRefs.current.log = mesh;
         }}
-        args={[geometry, logMaterial, maxLogInstances]}
+        args={[logGeometry, activeLogMaterial, maxLogInstances]}
         frustumCulled={false}
         castShadow
         receiveShadow
@@ -188,7 +345,7 @@ export default function VoxelMesh() {
         ref={(mesh) => {
           meshRefs.current.branch = mesh;
         }}
-        args={[geometry, branchMaterial, maxBranchInstances]}
+        args={[branchGeometry, activeBranchMaterial, maxBranchInstances]}
         frustumCulled={false}
         castShadow
         receiveShadow
@@ -197,7 +354,7 @@ export default function VoxelMesh() {
         ref={(mesh) => {
           meshRefs.current.leaf = mesh;
         }}
-        args={[geometry, leafMaterial, maxLeafInstances]}
+        args={[leafGeometry, activeLeafMaterial, maxLeafInstances]}
         frustumCulled={false}
         castShadow
         receiveShadow
@@ -206,7 +363,7 @@ export default function VoxelMesh() {
         ref={(mesh) => {
           meshRefs.current.fencePost = mesh;
         }}
-        args={[fencePostGeometry, fenceMaterial, maxFenceInstances]}
+        args={[fencePostGeometry, activeFenceMaterial, maxFenceInstances]}
         frustumCulled={false}
         castShadow
         receiveShadow
@@ -215,11 +372,17 @@ export default function VoxelMesh() {
         ref={(mesh) => {
           meshRefs.current.fenceArm = mesh;
         }}
-        args={[fenceArmGeometry, fenceMaterial, maxFenceArmInstances]}
+        args={[fenceArmGeometry, activeFenceMaterial, maxFenceArmInstances]}
         frustumCulled={false}
         castShadow
         receiveShadow
       />
     </>
   );
+}
+
+function setAxisAttribute(geometry: THREE.BoxGeometry, axes: Float32Array): void {
+  const attribute = new THREE.InstancedBufferAttribute(axes, 1);
+  geometry.setAttribute('instanceAxis', attribute);
+  attribute.needsUpdate = true;
 }

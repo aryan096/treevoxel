@@ -14,6 +14,12 @@ const DEFAULT_BLOCK_COLORS: BlockColors = {
   fence: '#8b6914',
 };
 
+const AXIS_TO_INDEX = {
+  y: 0,
+  x: 1,
+  z: 2,
+} as const;
+
 /**
  * Convert a VoxelStore into a flat RenderBuffer for InstancedMesh rendering.
  */
@@ -41,6 +47,7 @@ export function buildRenderBuffer(
   const matrices = new Float32Array(cubeCount * 16);
   const types = new Uint8Array(cubeCount);
   const colors = new Float32Array(cubeCount * 3);
+  const axes = new Uint8Array(cubeCount);
   const fencePostMatrices = new Float32Array(fencePostCount * 16);
   const fencePostColors = new Float32Array(fencePostCount * 3);
   const fenceArmCount = fenceArmDirections * 2;
@@ -52,6 +59,7 @@ export function buildRenderBuffer(
   let armIdx = 0;
 
   for (const [y, layer] of store.layers) {
+    const axisLayer = store.axis.get(y);
     const connLayer = store.fenceConnectivity.get(y);
     for (const [key, blockType] of layer) {
       const [x, z] = unpack(key);
@@ -61,7 +69,7 @@ export function buildRenderBuffer(
         writeColor(
           fencePostColors,
           postIdx * 3,
-          getVoxelColor('branch', x, y, z, blockColors.branch, colorRandomness),
+          getVoxelColor('fence', x, y, z, blockColors.fence, colorRandomness),
         );
         postIdx++;
 
@@ -93,7 +101,7 @@ export function buildRenderBuffer(
             writeColor(
               fenceArmColors,
               armIdx * 3,
-              getVoxelColor('branch', x, y, z, blockColors.branch, colorRandomness),
+              getVoxelColor('fence', x, y, z, blockColors.fence, colorRandomness),
             );
             armIdx++;
           }
@@ -104,6 +112,7 @@ export function buildRenderBuffer(
       writeMatrix(matrices, cubeIdx * 16, 1, 1, 1, x, y + 0.5, z);
       types[cubeIdx] = BLOCK_TYPE_INDEX[blockType];
       writeColor(colors, cubeIdx * 3, getVoxelColor(blockType, x, y, z, blockColors[blockType], colorRandomness));
+      axes[cubeIdx] = blockType === 'leaf' ? AXIS_TO_INDEX.y : AXIS_TO_INDEX[axisLayer?.get(key) ?? 'y'];
       cubeIdx++;
     }
   }
@@ -112,6 +121,7 @@ export function buildRenderBuffer(
     matrices,
     types,
     colors,
+    axes,
     count: cubeCount,
     fencePostMatrices,
     fencePostColors,

@@ -42,6 +42,8 @@ export default function CommunityPanel() {
   const params = useTreeStore((state) => state.params);
   const blockColors = useTreeStore((state) => state.blockColors);
   const minecraftPalette = useTreeStore((state) => state.minecraftPalette);
+  const textureSet = useTreeStore((state) => state.textureSet);
+  const renderStyle = useTreeStore((state) => state.renderStyle);
   const loadSnapshot = useTreeStore((state) => state.loadSnapshot);
 
   const [creationName, setCreationName] = useState('');
@@ -155,6 +157,8 @@ export default function CommunityPanel() {
           params,
           blockColors,
           minecraftPalette,
+          textureSet,
+          renderStyle,
         },
       });
 

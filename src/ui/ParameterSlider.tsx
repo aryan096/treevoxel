@@ -8,6 +8,7 @@ type Props = {
   param: ParameterDef;
   value: number;
   onChange: (value: number) => void;
+  disabled?: boolean;
   action?: {
     label: string;
     icon: string;
@@ -15,7 +16,7 @@ type Props = {
   };
 };
 
-function ParameterSlider({ param, value, onChange, action }: Props) {
+function ParameterSlider({ param, value, onChange, disabled = false, action }: Props) {
   const [isTouchDevice, setIsTouchDevice] = useState(false);
   const [touchTooltipOpen, setTouchTooltipOpen] = useState(false);
   const [draftValue, setDraftValue] = useState(value);
@@ -55,8 +56,9 @@ function ParameterSlider({ param, value, onChange, action }: Props) {
                 className={styles.labelButton}
                 aria-label={`Show details for ${param.label}`}
                 aria-expanded={isTouchDevice ? touchTooltipOpen : undefined}
+                disabled={disabled}
                 onClick={
-                  isTouchDevice
+                  isTouchDevice && !disabled
                     ? () => setTouchTooltipOpen((open) => !open)
                     : undefined
                 }
@@ -84,13 +86,17 @@ function ParameterSlider({ param, value, onChange, action }: Props) {
       </div>
       <div className={styles.controlRow}>
         <Slider.Root
-          className={styles.slider}
+          className={`${styles.slider} ${disabled ? styles.sliderDisabled : ''}`}
           min={param.min}
           max={param.max}
           step={param.step}
           value={[draftValue]}
+          disabled={disabled}
           onValueChange={([v]) => setDraftValue(v)}
           onValueCommit={([v]) => {
+            if (disabled) {
+              return;
+            }
             setDraftValue(v);
             if (v !== value) {
               onChange(v);
@@ -103,7 +109,7 @@ function ParameterSlider({ param, value, onChange, action }: Props) {
           <Slider.Thumb className={styles.thumb} />
         </Slider.Root>
         {action ? (
-          <button type="button" className={styles.actionButton} onClick={action.onClick} aria-label={action.label}>
+          <button type="button" className={styles.actionButton} onClick={action.onClick} aria-label={action.label} disabled={disabled}>
             <span>{action.label}</span>
             <span className={styles.actionIcon} aria-hidden="true">{action.icon}</span>
           </button>

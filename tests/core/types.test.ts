@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Axis, BlockType, MinecraftPalette, Preset, TreeSnapshot, VoxelStore } from '../../src/core/types';
+import type { RenderStyleId } from '../../src/render/renderStyle';
 
 describe('v2 type definitions', () => {
   it('BlockType includes fence', () => {
@@ -44,6 +45,7 @@ describe('v2 type definitions', () => {
   });
 
   it('TreeSnapshot includes minecraftPalette', () => {
+    const renderStyle: RenderStyleId = 'diorama';
     const snapshot: TreeSnapshot = {
       presetId: 'oak',
       params: {} as TreeSnapshot['params'],
@@ -59,9 +61,18 @@ describe('v2 type definitions', () => {
         fence: 'oak_fence',
         leaf: 'oak_leaves',
       },
+      textureSet: 'minecraft',
+      renderStyle,
     };
 
     expect(snapshot.minecraftPalette.log).toBe('oak_log');
+    expect(snapshot.textureSet).toBe('minecraft');
+    expect(snapshot.renderStyle).toBe('diorama');
+  });
+
+  it('RenderStyleId accepts flat and diorama', () => {
+    const styles: RenderStyleId[] = ['flat', 'diorama'];
+    expect(styles).toHaveLength(2);
   });
 
   it('Preset can carry an optional minecraftPalette', () => {

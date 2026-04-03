@@ -41,6 +41,11 @@ describe('buildRenderBuffer', () => {
     expect(buffer.colors.length).toBe(buffer.count * 3);
   });
 
+  it('axes array has one byte per cube instance', () => {
+    const buffer = buildRenderBuffer(store);
+    expect(buffer.axes.length).toBe(buffer.count);
+  });
+
   it('types are valid enum values (0=log, 1=branch, 2=leaf)', () => {
     const buffer = buildRenderBuffer(store);
     for (let i = 0; i < buffer.count; i++) {
@@ -147,6 +152,37 @@ describe('buildRenderBuffer', () => {
     const buffer = buildRenderBuffer(simpleStore, undefined, 0);
     expect(buffer.matrices[13]).toBeCloseTo(0.5, 5);
   });
+
+  it('encodes voxel axes as y=0, x=1, z=2 and defaults leaves to y', () => {
+    const axisStore: VoxelStore = {
+      layers: new Map([
+        [0, new Map([
+          [pack(0, 0), 'log'],
+          [pack(1, 0), 'branch'],
+          [pack(2, 0), 'leaf'],
+        ])],
+      ]),
+      axis: new Map([
+        [0, new Map([
+          [pack(0, 0), 'x'],
+          [pack(1, 0), 'z'],
+        ])],
+      ]),
+      fenceConnectivity: new Map(),
+      bounds: {
+        minX: 0,
+        maxX: 2,
+        minY: 0,
+        maxY: 0,
+        minZ: 0,
+        maxZ: 0,
+      },
+      count: 3,
+    };
+
+    const buffer = buildRenderBuffer(axisStore, undefined, 0);
+    expect(Array.from(buffer.axes)).toEqual([1, 2, 0]);
+  });
 });
 
 describe('fence render buffer', () => {
@@ -190,6 +226,27 @@ describe('fence render buffer', () => {
 
     const buffer = buildRenderBuffer(thinStore);
     expect(buffer.fenceArmCount).toBe(directionCount * 2);
+  });
+
+  it('uses the fence color palette for fence instances', () => {
+    const customColors = {
+      log: '#6b4226',
+      branch: '#00ff00',
+      leaf: '#4d9a45',
+      fence: '#ff0000',
+    } as const;
+
+    const buffer = buildRenderBuffer(thinStore, customColors, 0);
+
+    expect(buffer.fencePostCount).toBeGreaterThan(0);
+    expect(buffer.fencePostColors[0]).toBeCloseTo(1, 5);
+    expect(buffer.fencePostColors[1]).toBeCloseTo(0, 5);
+    expect(buffer.fencePostColors[2]).toBeCloseTo(0, 5);
+
+    expect(buffer.fenceArmCount).toBeGreaterThan(0);
+    expect(buffer.fenceArmColors[0]).toBeCloseTo(1, 5);
+    expect(buffer.fenceArmColors[1]).toBeCloseTo(0, 5);
+    expect(buffer.fenceArmColors[2]).toBeCloseTo(0, 5);
   });
 
   it('excludes fence voxels from the main cube buffer', () => {

@@ -1,3 +1,6 @@
+import type { TextureSetId } from '../textures/textureSet';
+import type { RenderStyleId } from '../render/renderStyle';
+
 // --- Block Types ---
 export type BlockType = 'log' | 'branch' | 'leaf' | 'fence';
 export type Axis = 'x' | 'y' | 'z';
@@ -19,6 +22,7 @@ export type RenderBuffer = {
   matrices: Float32Array;
   types: Uint8Array;
   colors: Float32Array;
+  axes: Uint8Array;
   count: number;
   fencePostMatrices: Float32Array;
   fencePostColors: Float32Array;
@@ -42,6 +46,8 @@ export type TreeSnapshot = {
   params: TreeParams;
   blockColors: BlockColors;
   minecraftPalette: MinecraftPalette;
+  textureSet?: TextureSetId;
+  renderStyle?: RenderStyleId;
 };
 
 // --- Skeleton ---

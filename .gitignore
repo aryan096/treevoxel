@@ -7,3 +7,6 @@ dist/
 docs/superpowers/*
 docs/specs/*
 .superpowers
+scripts/source-textures/
+public/textures/minecraft/atlas.png
+.codex

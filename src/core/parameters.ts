@@ -173,7 +173,6 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     effectDecrease: 'Dense canopy throughout.',
     min: 0, max: 1.0, step: 0.05, defaultValue: 0.3,
   },
-  // --- Minecraft Readability ---
   {
     id: 'minBranchThickness', label: 'Min Branch Thickness', group: 'minecraft',
     description: 'Minimum branch width in blocks, prevents noisy single-block artifacts.',
@@ -182,14 +181,14 @@ export const PARAMETER_DEFS: ParameterDef[] = [
     min: 1, max: 3, step: 1, defaultValue: 1,
   },
   {
-    id: 'leafCleanup', label: 'Leaf Cleanup', group: 'minecraft',
-    description: 'Remove floating or isolated leaf blocks.',
-    effectIncrease: 'Cleaner leaf placement, fewer floaters.',
-    effectDecrease: 'More organic but messier leaf scatter.',
+    id: 'leafCleanup', label: 'Canopy Cleanup', group: 'crown',
+    description: 'Remove floating or isolated leaves to keep the crown silhouette cleaner.',
+    effectIncrease: 'Cleaner canopy edges, fewer stray leaves.',
+    effectDecrease: 'Looser canopy with more irregular leaf scatter.',
     min: 0, max: 1.0, step: 0.05, defaultValue: 0.5,
   },
   {
-    id: 'symmetryAssist', label: 'Symmetry Assist', group: 'minecraft',
+    id: 'symmetryAssist', label: 'Symmetry Assist', group: 'branching',
     description: 'Reduce awkward random noise by enforcing partial symmetry.',
     effectIncrease: 'More symmetric, tidier appearance.',
     effectDecrease: 'More natural asymmetry.',
@@ -197,6 +196,7 @@ export const PARAMETER_DEFS: ParameterDef[] = [
   },
   {
     id: 'buildabilityBias', label: 'Buildability Bias', group: 'minecraft',
+    // Reserved for future buildability-focused generation work; intentionally inactive for now.
     description: 'Prioritize clearer silhouettes over botanical detail.',
     effectIncrease: 'Simpler, easier to build shapes.',
     effectDecrease: 'More complex, botanically detailed shapes.',

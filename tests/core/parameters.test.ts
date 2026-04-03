@@ -38,6 +38,23 @@ describe('parameters', () => {
     }
   });
 
+  it('keeps live hidden controls present in the parameter definitions', () => {
+    const ids = new Set(PARAMETER_DEFS.map((p) => p.id));
+    expect(ids.has('minBranchThickness')).toBe(true);
+    expect(ids.has('leafCleanup')).toBe(true);
+    expect(ids.has('symmetryAssist')).toBe(true);
+    expect(ids.has('buildabilityBias')).toBe(true);
+  });
+
+  it('assigns exposed and reserved params to the intended groups', () => {
+    const groupFor = (id: string) => PARAMETER_DEFS.find((p) => p.id === id)?.group;
+
+    expect(groupFor('minBranchThickness')).toBe('minecraft');
+    expect(groupFor('leafCleanup')).toBe('crown');
+    expect(groupFor('symmetryAssist')).toBe('branching');
+    expect(groupFor('buildabilityBias')).toBe('minecraft');
+  });
+
   it('parameter ids are unique', () => {
     const ids = PARAMETER_DEFS.map(p => p.id);
     expect(new Set(ids).size).toBe(ids.length);

@@ -20,6 +20,8 @@ import {
 } from '../core/presets';
 import { generateTree, type GenerationResult } from '../core/generate';
 import { buildRenderBuffer } from '../core/renderBuffer';
+import type { TextureSetId } from '../textures/textureSet';
+import type { RenderStyleId } from '../render/renderStyle';
 
 type DisplayToggles = {
   showLog: boolean;
@@ -38,6 +40,8 @@ type TreeState = {
   display: DisplayToggles;
   blockColors: BlockColors;
   minecraftPalette: MinecraftPalette;
+  textureSet: TextureSetId;
+  renderStyle: RenderStyleId;
 
   // Derived (computed eagerly on param change)
   model: TreeModel;
@@ -51,6 +55,8 @@ type TreeState = {
   toggleDisplay: (key: keyof DisplayToggles) => void;
   setBlockColor: (type: BlockType, color: string) => void;
   setMinecraftPaletteEntry: (type: keyof MinecraftPalette, blockId: string, color: string) => void;
+  setTextureSet: (id: TextureSetId) => void;
+  setRenderStyle: (id: RenderStyleId) => void;
   randomizeSeed: () => void;
   loadSnapshot: (snapshot: TreeSnapshot) => void;
 };
@@ -62,14 +68,28 @@ const DEFAULT_BLOCK_COLORS: BlockColors = {
   fence: '#8b6914',
 };
 
-function regenerate(params: TreeParams, blockColors: BlockColors): GenerationResult {
-  return generateTree(params, blockColors);
+function getEffectiveColorRandomness(textureSet: TextureSetId, colorRandomness: number): number {
+  return textureSet === 'minecraft' ? 0 : colorRandomness;
+}
+
+function regenerate(
+  params: TreeParams,
+  blockColors: BlockColors,
+  textureSet: TextureSetId,
+): GenerationResult {
+  const result = generateTree(params, blockColors);
+  result.buffer = buildRenderBuffer(
+    result.voxels,
+    blockColors,
+    getEffectiveColorRandomness(textureSet, params.colorRandomness),
+  );
+  return result;
 }
 
 const initialParams = applyPreset(getDefaultParams(), PRESETS[0]);
 const initialBlockColors = applyPresetBlockColors(DEFAULT_BLOCK_COLORS, PRESETS[0]);
 const initialMinecraftPalette = applyPresetMinecraftPalette(DEFAULT_MINECRAFT_PALETTE, PRESETS[0]);
-const initialResult = regenerate(initialParams, initialBlockColors);
+const initialResult = regenerate(initialParams, initialBlockColors, 'flat_color');
 
 export const useTreeStore = create<TreeState>((set) => ({
   presetId: PRESETS[0].id,
@@ -77,6 +97,8 @@ export const useTreeStore = create<TreeState>((set) => ({
   activeLayerIndex: 0,
   blockColors: initialBlockColors,
   minecraftPalette: initialMinecraftPalette,
+  textureSet: 'flat_color',
+  renderStyle: 'flat',
   display: {
     showLog: true,
     showBranch: true,
@@ -97,7 +119,7 @@ export const useTreeStore = create<TreeState>((set) => ({
       }
 
       const params = { ...state.params, [id]: value };
-      const result = regenerate(params, state.blockColors);
+      const result = regenerate(params, state.blockColors, state.textureSet);
       return {
         params,
         model: result.model,
@@ -113,7 +135,7 @@ export const useTreeStore = create<TreeState>((set) => ({
       const params = applyPreset(getDefaultParams(), preset);
       const blockColors = applyPresetBlockColors(state.blockColors, preset);
       const minecraftPalette = applyPresetMinecraftPalette(state.minecraftPalette, preset);
-      const result = regenerate(params, blockColors);
+      const result = regenerate(params, blockColors, state.textureSet);
       return {
         presetId: id,
         params,
@@ -149,7 +171,11 @@ export const useTreeStore = create<TreeState>((set) => ({
       const blockColors = { ...state.blockColors, [type]: color };
       return {
         blockColors,
-        buffer: buildRenderBuffer(state.voxels, blockColors, state.params.colorRandomness),
+        buffer: buildRenderBuffer(
+          state.voxels,
+          blockColors,
+          getEffectiveColorRandomness(state.textureSet, state.params.colorRandomness),
+        ),
       };
     }),
 
@@ -168,14 +194,39 @@ export const useTreeStore = create<TreeState>((set) => ({
       return {
         minecraftPalette,
         blockColors,
-        buffer: buildRenderBuffer(state.voxels, blockColors, state.params.colorRandomness),
+        buffer: buildRenderBuffer(
+          state.voxels,
+          blockColors,
+          getEffectiveColorRandomness(state.textureSet, state.params.colorRandomness),
+        ),
       };
+    }),
+
+  setTextureSet: (id) =>
+    set((state) => {
+      if (state.textureSet === id) {
+        return state;
+      }
+
+      return {
+        textureSet: id,
+        buffer: buildRenderBuffer(state.voxels, state.blockColors, getEffectiveColorRandomness(id, state.params.colorRandomness)),
+      };
+    }),
+
+  setRenderStyle: (id) =>
+    set((state) => {
+      if (state.renderStyle === id) {
+        return state;
+      }
+
+      return { renderStyle: id };
     }),
 
   randomizeSeed: () =>
     set((state) => {
       const params = { ...state.params, randomSeed: Math.floor(Math.random() * 999999) };
-      const result = regenerate(params, state.blockColors);
+      const result = regenerate(params, state.blockColors, state.textureSet);
       return {
         params,
         model: result.model,
@@ -187,12 +238,16 @@ export const useTreeStore = create<TreeState>((set) => ({
   loadSnapshot: (snapshot) =>
     set(() => {
       const params = { ...getDefaultParams(), ...snapshot.params };
-      const result = regenerate(params, snapshot.blockColors);
+      const textureSet = snapshot.textureSet ?? 'flat_color';
+      const result = regenerate(params, snapshot.blockColors, textureSet);
+      const legacyRenderStyle = snapshot.renderStyle as RenderStyleId | 'editor' | undefined;
       return {
         presetId: snapshot.presetId,
         params,
         blockColors: snapshot.blockColors,
         minecraftPalette: snapshot.minecraftPalette ?? DEFAULT_MINECRAFT_PALETTE,
+        textureSet,
+        renderStyle: legacyRenderStyle === 'editor' ? 'flat' : (legacyRenderStyle ?? 'flat'),
         model: result.model,
         voxels: result.voxels,
         buffer: result.buffer,
