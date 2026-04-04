@@ -18,6 +18,10 @@ const REFERENCES = [
     title: 'Runions, Lane, Prusinkiewicz, Modeling Trees with a Space Colonization Algorithm (2007)',
     href: 'https://algorithmicbotany.org/papers/colonization.egwnp2007.html',
   },
+  {
+    title: 'Faithful 32x Resource Pack by Faithful Team',
+    href: 'https://faithfulpack.net/',
+  },
 ] as const;
 
 export default function AboutPanel() {
