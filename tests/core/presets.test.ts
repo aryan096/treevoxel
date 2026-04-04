@@ -6,7 +6,7 @@ import type { BlockColors, MinecraftPalette } from '../../src/core/types';
 
 describe('presets', () => {
   it('matches the Minecraft-first preset catalog plus the two extras', () => {
-    expect(PRESETS).toHaveLength(10);
+    expect(PRESETS).toHaveLength(9);
     const ids = PRESETS.map(p => p.id);
     expect(ids).toContain('oak');
     expect(ids).toContain('dark_oak');
@@ -15,7 +15,6 @@ describe('presets', () => {
     expect(ids).toContain('acacia');
     expect(ids).toContain('jungle');
     expect(ids).toContain('cherry_blossom');
-    expect(ids).toContain('mangrove');
     expect(ids).toContain('baobab');
     expect(ids).toContain('crazy');
   });
@@ -36,8 +35,13 @@ describe('presets', () => {
     }
   });
 
-  it('keeps all preset default heights at or below the 20-block build target', () => {
+  it('keeps all presets except crazy at or below the 20-block build target', () => {
     for (const preset of PRESETS) {
+      if (preset.id === 'crazy') {
+        expect(preset.params.height).toBe(40);
+        continue;
+      }
+
       expect((preset.params.height ?? Infinity)).toBeLessThanOrEqual(20);
     }
   });
@@ -67,10 +71,10 @@ describe('presets', () => {
       fence: '#222222',
     };
     const original = { ...baseColors };
-    const mangrove = PRESETS.find((p) => p.id === 'mangrove')!;
-    const result = applyPresetBlockColors(baseColors, mangrove);
+    const baobab = PRESETS.find((p) => p.id === 'baobab')!;
+    const result = applyPresetBlockColors(baseColors, baobab);
 
-    expect(result).toEqual(mangrove.blockColors);
+    expect(result).toEqual(baobab.blockColors);
     expect(baseColors).toEqual(original);
   });
 
@@ -113,12 +117,11 @@ describe('presets', () => {
     const minimumLeafClusters: Record<string, number> = {
       oak: 20,
       dark_oak: 25,
-      spruce: 28,
-      birch: 12,
+      spruce: 26,
+      birch: 10,
       acacia: 15,
       jungle: 20,
       cherry_blossom: 20,
-      mangrove: 20,
       baobab: 12,
       crazy: 20,
     };

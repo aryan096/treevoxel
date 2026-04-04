@@ -166,7 +166,7 @@ describe('voxelize', () => {
   });
 
   it('preset trees retain some full-block branch voxels instead of only fences', () => {
-    const presetIds = new Set(['spruce', 'oak', 'mangrove']);
+    const presetIds = new Set(['spruce', 'oak', 'dark_oak']);
 
     for (const preset of PRESETS.filter((entry) => presetIds.has(entry.id))) {
       const params = applyPreset(getDefaultParams(), preset);

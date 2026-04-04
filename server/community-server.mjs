@@ -63,12 +63,6 @@ const presetBlockColors = {
     leaf: '#e8b4c8',
     fence: '#d9a1a1',
   },
-  mangrove: {
-    log: '#6b4535',
-    branch: '#7b3a36',
-    leaf: '#4d8b28',
-    fence: '#7b3a36',
-  },
   baobab: {
     log: '#8a6a42',
     branch: '#b9814d',
@@ -136,12 +130,6 @@ const presetMinecraftPalette = {
     branch: 'stripped_cherry_log',
     fence: 'cherry_fence',
     leaf: 'cherry_leaves',
-  },
-  mangrove: {
-    log: 'mangrove_log',
-    branch: 'stripped_mangrove_log',
-    fence: 'mangrove_fence',
-    leaf: 'mangrove_leaves',
   },
   baobab: {
     log: 'acacia_log',

@@ -189,7 +189,6 @@ export type PresetId =
   | 'acacia'
   | 'jungle'
   | 'cherry_blossom'
-  | 'mangrove'
   | 'baobab'
   | 'crazy';
 

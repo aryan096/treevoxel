@@ -1,5 +1,7 @@
+import { useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, GizmoHelper, GizmoViewport, Sky } from '@react-three/drei';
+import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import VoxelMesh from './VoxelMesh';
 import LayerHighlight from './LayerHighlight';
@@ -137,12 +139,7 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
         color={activePalette.rimLight}
       />
 
-      {isDiorama && isMinecraft && (
-        <mesh>
-          <sphereGeometry args={[450, 64, 32]} />
-          <meshBasicMaterial color="#a8d0ff" side={THREE.BackSide} depthWrite={false} fog={false} />
-        </mesh>
-      )}
+      {isDiorama && isMinecraft && <MinecraftSky />}
       {isDiorama && !isMinecraft && (
         <Sky
           distance={450}
@@ -192,5 +189,28 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
         maxDistance={200}
       />
     </Canvas>
+  );
+}
+
+function MinecraftSky() {
+  const camera = useThree((s) => s.camera);
+  const skyRef = useRef<THREE.Mesh>(null);
+
+  useFrame(() => {
+    skyRef.current?.position.copy(camera.position);
+  });
+
+  return (
+    <mesh ref={skyRef} frustumCulled={false} renderOrder={-1}>
+      <sphereGeometry args={[450, 64, 32]} />
+      <meshBasicMaterial
+        color="#a8d0ff"
+        side={THREE.BackSide}
+        depthTest={false}
+        depthWrite={false}
+        fog={false}
+        toneMapped={false}
+      />
+    </mesh>
   );
 }
