@@ -185,6 +185,55 @@ describe('buildRenderBuffer', () => {
   });
 });
 
+describe('fence geometry', () => {
+  function makeSingleFenceStore(connectivity: number) {
+    const key = pack(0, 0);
+    return {
+      layers: new Map([[0, new Map([[key, 'fence' as const]])]]),
+      fenceConnectivity: new Map([[0, new Map([[key, connectivity]])]]),
+      axis: new Map<number, Map<number, 'x' | 'y' | 'z'>>(),
+      bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0, minZ: 0, maxZ: 0 },
+      count: 1,
+    };
+  }
+
+  it('isolated fence (no connections) has 1 post and 0 NS/EW rails', () => {
+    const store = makeSingleFenceStore(0b0000);
+    const buffer = buildRenderBuffer(store);
+    expect(buffer.fencePostCount).toBe(1);
+    expect(buffer.fenceNSRailCount).toBe(0);
+    expect(buffer.fenceEWRailCount).toBe(0);
+  });
+
+  it('fence connected north (bit 0) has 2 NS rail instances and 0 EW rails', () => {
+    const store = makeSingleFenceStore(0b0001);
+    const buffer = buildRenderBuffer(store);
+    expect(buffer.fenceNSRailCount).toBe(2);
+    expect(buffer.fenceEWRailCount).toBe(0);
+  });
+
+  it('fence connected east (bit 2) has 2 EW rail instances and 0 NS rails', () => {
+    const store = makeSingleFenceStore(0b0100);
+    const buffer = buildRenderBuffer(store);
+    expect(buffer.fenceEWRailCount).toBe(2);
+    expect(buffer.fenceNSRailCount).toBe(0);
+  });
+
+  it('NS bits (0,1) contribute to fenceNSRailCount, EW bits (2,3) to fenceEWRailCount', () => {
+    // Both N (bit 0) and S (bit 1) set
+    const storeNS = makeSingleFenceStore(0b0011);
+    const bufferNS = buildRenderBuffer(storeNS);
+    expect(bufferNS.fenceNSRailCount).toBe(4); // 2 bits x 2 heights each
+    expect(bufferNS.fenceEWRailCount).toBe(0);
+
+    // Both E (bit 2) and W (bit 3) set
+    const storeEW = makeSingleFenceStore(0b1100);
+    const bufferEW = buildRenderBuffer(storeEW);
+    expect(bufferEW.fenceEWRailCount).toBe(4); // 2 bits x 2 heights each
+    expect(bufferEW.fenceNSRailCount).toBe(0);
+  });
+});
+
 describe('fence render buffer', () => {
   const thinParams = {
     ...getDefaultParams(),

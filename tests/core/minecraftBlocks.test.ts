@@ -46,3 +46,35 @@ describe('MC_BLOCK_PRESETS', () => {
     expect(getPresetById('nonexistent_block')).toBeUndefined();
   });
 });
+
+describe('plank presets', () => {
+  it('oak_planks is selectable for log', () => {
+    const logPresets = getPresetsForCategory('log');
+    expect(logPresets.some(p => p.id === 'oak_planks')).toBe(true);
+  });
+
+  it('bamboo_planks is selectable for branch', () => {
+    const branchPresets = getPresetsForCategory('branch');
+    expect(branchPresets.some(p => p.id === 'bamboo_planks')).toBe(true);
+  });
+
+  it('bamboo_planks is distinct from bamboo_block', () => {
+    const logPresets = getPresetsForCategory('log');
+    const bambooBlock = logPresets.find(p => p.id === 'bamboo_block');
+    const bambooPlank = logPresets.find(p => p.id === 'bamboo_planks');
+    expect(bambooBlock).toBeDefined();
+    expect(bambooPlank).toBeDefined();
+    expect(bambooBlock?.id).not.toBe(bambooPlank?.id);
+  });
+
+  it('all 9 plank types are selectable for log', () => {
+    const logPresets = getPresetsForCategory('log');
+    const plankIds = [
+      'oak_planks', 'spruce_planks', 'birch_planks', 'jungle_planks',
+      'acacia_planks', 'dark_oak_planks', 'mangrove_planks', 'cherry_planks', 'bamboo_planks',
+    ];
+    for (const id of plankIds) {
+      expect(logPresets.some(p => p.id === id), `${id} missing from log presets`).toBe(true);
+    }
+  });
+});

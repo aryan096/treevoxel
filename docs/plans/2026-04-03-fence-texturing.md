@@ -227,10 +227,10 @@ Fence rendering now depends on atlas contents, geometry UVs, and connectivity-dr
 - Modify: `tests/core/renderBuffer.test.ts`
 - Add tests where useful for atlas lookups or material input selection
 
-- [ ] Add or extend tests that verify fence connectivity still produces the expected number of posts and rails after the render-buffer changes.
-- [ ] Add a test around fence texture lookup so `minecraftPalette.fence` resolves the expected atlas cell.
-- [ ] Add tests around Minecraft block preset/category lists so plank blocks are selectable for `log` and `branch`.
-- [ ] Add a test around cube texture lookup so selectable plank IDs resolve to the expected atlas cell for all faces.
+- [x] Add or extend tests that verify fence connectivity still produces the expected number of posts and rails after the render-buffer changes.
+- [x] Add a test around fence texture lookup so `minecraftPalette.fence` resolves the expected atlas cell.
+- [x] Add tests around Minecraft block preset/category lists so plank blocks are selectable for `log` and `branch`.
+- [x] Add a test around cube texture lookup so selectable plank IDs resolve to the expected atlas cell for all faces.
 - [ ] Manual-check these cases in the app with `textureSet = 'minecraft'`:
   - isolated fence post
   - straight run
