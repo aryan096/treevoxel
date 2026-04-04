@@ -77,4 +77,15 @@ describe('plank presets', () => {
       expect(logPresets.some(p => p.id === id), `${id} missing from log presets`).toBe(true);
     }
   });
+
+  it('all 9 plank types are selectable for branch', () => {
+    const branchPresets = getPresetsForCategory('branch');
+    const plankIds = [
+      'oak_planks', 'spruce_planks', 'birch_planks', 'jungle_planks',
+      'acacia_planks', 'dark_oak_planks', 'mangrove_planks', 'cherry_planks', 'bamboo_planks',
+    ];
+    for (const id of plankIds) {
+      expect(branchPresets.some(p => p.id === id), `${id} missing from branch presets`).toBe(true);
+    }
+  });
 });

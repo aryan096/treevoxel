@@ -367,11 +367,3 @@ function writeColor(target: Float32Array, offset: number, color: [number, number
   target[offset + 1] = color[1];
   target[offset + 2] = color[2];
 }
-
-function countBits(mask: number): number {
-  let bits = 0;
-  for (let i = 0; i < 4; i++) {
-    if (mask & (1 << i)) bits++;
-  }
-  return bits;
-}
