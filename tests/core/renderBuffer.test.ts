@@ -212,20 +212,22 @@ describe('fence render buffer', () => {
     expect(buffer.fencePostColors.length).toBe(fenceVoxelCount * 3);
   });
 
-  it('produces two fence arm instances per active connectivity direction', () => {
-    let directionCount = 0;
+  it('produces two rail instances per active connectivity direction split into NS and EW', () => {
+    let nsDirectionCount = 0;
+    let ewDirectionCount = 0;
     for (const connectivityLayer of thinStore.fenceConnectivity.values()) {
       for (const mask of connectivityLayer.values()) {
-        for (let bit = 0; bit < 4; bit++) {
-          if ((mask & (1 << bit)) !== 0) {
-            directionCount++;
-          }
-        }
+        // bits 0,1 = N,S; bits 2,3 = E,W
+        if (mask & 0b0001) nsDirectionCount++;
+        if (mask & 0b0010) nsDirectionCount++;
+        if (mask & 0b0100) ewDirectionCount++;
+        if (mask & 0b1000) ewDirectionCount++;
       }
     }
 
     const buffer = buildRenderBuffer(thinStore);
-    expect(buffer.fenceArmCount).toBe(directionCount * 2);
+    expect(buffer.fenceNSRailCount).toBe(nsDirectionCount * 2);
+    expect(buffer.fenceEWRailCount).toBe(ewDirectionCount * 2);
   });
 
   it('uses the fence color palette for fence instances', () => {
@@ -243,10 +245,18 @@ describe('fence render buffer', () => {
     expect(buffer.fencePostColors[1]).toBeCloseTo(0, 5);
     expect(buffer.fencePostColors[2]).toBeCloseTo(0, 5);
 
-    expect(buffer.fenceArmCount).toBeGreaterThan(0);
-    expect(buffer.fenceArmColors[0]).toBeCloseTo(1, 5);
-    expect(buffer.fenceArmColors[1]).toBeCloseTo(0, 5);
-    expect(buffer.fenceArmColors[2]).toBeCloseTo(0, 5);
+    const totalRailCount = buffer.fenceNSRailCount + buffer.fenceEWRailCount;
+    expect(totalRailCount).toBeGreaterThan(0);
+    if (buffer.fenceNSRailCount > 0) {
+      expect(buffer.fenceNSRailColors[0]).toBeCloseTo(1, 5);
+      expect(buffer.fenceNSRailColors[1]).toBeCloseTo(0, 5);
+      expect(buffer.fenceNSRailColors[2]).toBeCloseTo(0, 5);
+    }
+    if (buffer.fenceEWRailCount > 0) {
+      expect(buffer.fenceEWRailColors[0]).toBeCloseTo(1, 5);
+      expect(buffer.fenceEWRailColors[1]).toBeCloseTo(0, 5);
+      expect(buffer.fenceEWRailColors[2]).toBeCloseTo(0, 5);
+    }
   });
 
   it('excludes fence voxels from the main cube buffer', () => {

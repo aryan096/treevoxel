@@ -6,13 +6,15 @@ import { getLeafTintColor } from './leafTint';
 import { useTreeStore } from '../store/treeStore';
 import { loadAtlas } from '../textures/loadAtlas';
 import { MINECRAFT_ATLAS_DEFINITION } from '../textures/minecraftAtlas';
+import { createFencePostGeometry, createFenceNSRailGeometry, createFenceEWRailGeometry } from './fenceGeometry';
 
 type MeshRefs = {
   log: THREE.InstancedMesh | null;
   branch: THREE.InstancedMesh | null;
   leaf: THREE.InstancedMesh | null;
   fencePost: THREE.InstancedMesh | null;
-  fenceArm: THREE.InstancedMesh | null;
+  fenceNSRail: THREE.InstancedMesh | null;
+  fenceEWRail: THREE.InstancedMesh | null;
 };
 
 type CubeInstanceData = {
@@ -47,7 +49,8 @@ export default function VoxelMesh() {
     branch: null,
     leaf: null,
     fencePost: null,
-    fenceArm: null,
+    fenceNSRail: null,
+    fenceEWRail: null,
   });
   const buffer = useTreeStore((s) => s.buffer);
   const showLog = useTreeStore((s) => s.display.showLog);
@@ -61,8 +64,9 @@ export default function VoxelMesh() {
   const logGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
   const branchGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
   const leafGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
-  const fencePostGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
-  const fenceArmGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
+  const fencePostGeometry = useMemo(() => createFencePostGeometry(), []);
+  const fenceNSRailGeometry = useMemo(() => createFenceNSRailGeometry(), []);
+  const fenceEWRailGeometry = useMemo(() => createFenceEWRailGeometry(), []);
   const logMaterial = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
@@ -205,12 +209,13 @@ export default function VoxelMesh() {
     branchGeometry.dispose();
     leafGeometry.dispose();
     fencePostGeometry.dispose();
-    fenceArmGeometry.dispose();
+    fenceNSRailGeometry.dispose();
+    fenceEWRailGeometry.dispose();
     logMaterial.dispose();
     branchMaterial.dispose();
     leafMaterial.dispose();
     fenceMaterial.dispose();
-  }, [branchGeometry, branchMaterial, fenceArmGeometry, fenceMaterial, fencePostGeometry, leafGeometry, leafMaterial, logGeometry, logMaterial]);
+  }, [branchGeometry, branchMaterial, fenceEWRailGeometry, fenceMaterial, fenceNSRailGeometry, fencePostGeometry, leafGeometry, leafMaterial, logGeometry, logMaterial]);
 
   useEffect(() => () => {
     texturedLogMaterial?.dispose();
@@ -239,15 +244,17 @@ export default function VoxelMesh() {
   const maxBranchInstances = Math.max(1, cubeData.counts.branch);
   const maxLeafInstances = Math.max(1, cubeData.counts.leaf);
   const maxFenceInstances = Math.max(1, buffer.fencePostCount);
-  const maxFenceArmInstances = Math.max(1, buffer.fenceArmCount);
+  const maxFenceNSRailInstances = Math.max(1, buffer.fenceNSRailCount);
+  const maxFenceEWRailInstances = Math.max(1, buffer.fenceEWRailCount);
 
   useEffect(() => {
     const logMesh = meshRefs.current.log;
     const branchMesh = meshRefs.current.branch;
     const leafMesh = meshRefs.current.leaf;
     const fencePostMesh = meshRefs.current.fencePost;
-    const fenceArmMesh = meshRefs.current.fenceArm;
-    if (!logMesh || !branchMesh || !leafMesh || !fencePostMesh || !fenceArmMesh) return;
+    const fenceNSRailMesh = meshRefs.current.fenceNSRail;
+    const fenceEWRailMesh = meshRefs.current.fenceEWRail;
+    if (!logMesh || !branchMesh || !leafMesh || !fencePostMesh || !fenceNSRailMesh || !fenceEWRailMesh) return;
 
     const matrix = new THREE.Matrix4();
     const color = new THREE.Color();
@@ -280,32 +287,42 @@ export default function VoxelMesh() {
       matrix.fromArray(buffer.fencePostMatrices, i * 16);
       color.fromArray(buffer.fencePostColors, i * 3);
       fencePostMesh.setMatrixAt(i, matrix);
-        fencePostMesh.setColorAt(i, color);
+      fencePostMesh.setColorAt(i, color);
     }
 
-    for (let i = 0; i < buffer.fenceArmCount; i++) {
-      matrix.fromArray(buffer.fenceArmMatrices, i * 16);
-      color.fromArray(buffer.fenceArmColors, i * 3);
-      fenceArmMesh.setMatrixAt(i, matrix);
-        fenceArmMesh.setColorAt(i, color);
+    for (let i = 0; i < buffer.fenceNSRailCount; i++) {
+      matrix.fromArray(buffer.fenceNSRailMatrices, i * 16);
+      color.fromArray(buffer.fenceNSRailColors, i * 3);
+      fenceNSRailMesh.setMatrixAt(i, matrix);
+      fenceNSRailMesh.setColorAt(i, color);
+    }
+
+    for (let i = 0; i < buffer.fenceEWRailCount; i++) {
+      matrix.fromArray(buffer.fenceEWRailMatrices, i * 16);
+      color.fromArray(buffer.fenceEWRailColors, i * 3);
+      fenceEWRailMesh.setMatrixAt(i, matrix);
+      fenceEWRailMesh.setColorAt(i, color);
     }
 
     logMesh.count = logCount;
     branchMesh.count = branchCount;
     leafMesh.count = leafCount;
     fencePostMesh.count = buffer.fencePostCount;
-    fenceArmMesh.count = buffer.fenceArmCount;
+    fenceNSRailMesh.count = buffer.fenceNSRailCount;
+    fenceEWRailMesh.count = buffer.fenceEWRailCount;
 
     logMesh.instanceMatrix.needsUpdate = true;
     branchMesh.instanceMatrix.needsUpdate = true;
     leafMesh.instanceMatrix.needsUpdate = true;
     fencePostMesh.instanceMatrix.needsUpdate = true;
-    fenceArmMesh.instanceMatrix.needsUpdate = true;
+    fenceNSRailMesh.instanceMatrix.needsUpdate = true;
+    fenceEWRailMesh.instanceMatrix.needsUpdate = true;
     if (logMesh.instanceColor) logMesh.instanceColor.needsUpdate = true;
     if (branchMesh.instanceColor) branchMesh.instanceColor.needsUpdate = true;
     if (leafMesh.instanceColor) leafMesh.instanceColor.needsUpdate = true;
     if (fencePostMesh.instanceColor) fencePostMesh.instanceColor.needsUpdate = true;
-    if (fenceArmMesh.instanceColor) fenceArmMesh.instanceColor.needsUpdate = true;
+    if (fenceNSRailMesh.instanceColor) fenceNSRailMesh.instanceColor.needsUpdate = true;
+    if (fenceEWRailMesh.instanceColor) fenceEWRailMesh.instanceColor.needsUpdate = true;
 
     invalidate();
   }, [activeBranchMaterial, activeFenceMaterial, activeLeafMaterial, activeLogMaterial, buffer, invalidate, isMinecraftTextureMode]);
@@ -315,14 +332,16 @@ export default function VoxelMesh() {
     const branchMesh = meshRefs.current.branch;
     const leafMesh = meshRefs.current.leaf;
     const fencePostMesh = meshRefs.current.fencePost;
-    const fenceArmMesh = meshRefs.current.fenceArm;
-    if (!logMesh || !branchMesh || !leafMesh || !fencePostMesh || !fenceArmMesh) return;
+    const fenceNSRailMesh = meshRefs.current.fenceNSRail;
+    const fenceEWRailMesh = meshRefs.current.fenceEWRail;
+    if (!logMesh || !branchMesh || !leafMesh || !fencePostMesh || !fenceNSRailMesh || !fenceEWRailMesh) return;
 
     logMesh.visible = showLog;
     branchMesh.visible = showBranch;
     leafMesh.visible = showLeaf;
     fencePostMesh.visible = showBranch;
-    fenceArmMesh.visible = showBranch;
+    fenceNSRailMesh.visible = showBranch;
+    fenceEWRailMesh.visible = showBranch;
     invalidate();
   }, [showBranch, showLeaf, showLog, invalidate]);
 
@@ -370,9 +389,18 @@ export default function VoxelMesh() {
       />
       <instancedMesh
         ref={(mesh) => {
-          meshRefs.current.fenceArm = mesh;
+          meshRefs.current.fenceNSRail = mesh;
         }}
-        args={[fenceArmGeometry, activeFenceMaterial, maxFenceArmInstances]}
+        args={[fenceNSRailGeometry, activeFenceMaterial, maxFenceNSRailInstances]}
+        frustumCulled={false}
+        castShadow
+        receiveShadow
+      />
+      <instancedMesh
+        ref={(mesh) => {
+          meshRefs.current.fenceEWRail = mesh;
+        }}
+        args={[fenceEWRailGeometry, activeFenceMaterial, maxFenceEWRailInstances]}
         frustumCulled={false}
         castShadow
         receiveShadow

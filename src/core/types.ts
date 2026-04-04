@@ -27,9 +27,12 @@ export type RenderBuffer = {
   fencePostMatrices: Float32Array;
   fencePostColors: Float32Array;
   fencePostCount: number;
-  fenceArmMatrices: Float32Array;
-  fenceArmColors: Float32Array;
-  fenceArmCount: number;
+  fenceNSRailMatrices: Float32Array;
+  fenceNSRailColors: Float32Array;
+  fenceNSRailCount: number;
+  fenceEWRailMatrices: Float32Array;
+  fenceEWRailColors: Float32Array;
+  fenceEWRailCount: number;
 };
 
 export type BlockColors = Record<BlockType, string>;

@@ -30,14 +30,20 @@ export function buildRenderBuffer(
 ): RenderBuffer {
   let cubeCount = 0;
   let fencePostCount = 0;
-  let fenceArmDirections = 0;
+  let fenceNSDirections = 0;
+  let fenceEWDirections = 0;
 
   for (const [y, layer] of store.layers) {
     const connLayer = store.fenceConnectivity.get(y);
     for (const [key, blockType] of layer) {
       if (blockType === 'fence') {
         fencePostCount++;
-        fenceArmDirections += countBits(connLayer?.get(key) ?? 0);
+        const mask = connLayer?.get(key) ?? 0;
+        // bits 0,1 = N,S (dz≠0); bits 2,3 = E,W (dx≠0)
+        if (mask & 0b0001) fenceNSDirections++;
+        if (mask & 0b0010) fenceNSDirections++;
+        if (mask & 0b0100) fenceEWDirections++;
+        if (mask & 0b1000) fenceEWDirections++;
       } else {
         cubeCount++;
       }
@@ -50,13 +56,17 @@ export function buildRenderBuffer(
   const axes = new Uint8Array(cubeCount);
   const fencePostMatrices = new Float32Array(fencePostCount * 16);
   const fencePostColors = new Float32Array(fencePostCount * 3);
-  const fenceArmCount = fenceArmDirections * 2;
-  const fenceArmMatrices = new Float32Array(fenceArmCount * 16);
-  const fenceArmColors = new Float32Array(fenceArmCount * 3);
+  const fenceNSRailCount = fenceNSDirections * 2;
+  const fenceNSRailMatrices = new Float32Array(fenceNSRailCount * 16);
+  const fenceNSRailColors = new Float32Array(fenceNSRailCount * 3);
+  const fenceEWRailCount = fenceEWDirections * 2;
+  const fenceEWRailMatrices = new Float32Array(fenceEWRailCount * 16);
+  const fenceEWRailColors = new Float32Array(fenceEWRailCount * 3);
 
   let cubeIdx = 0;
   let postIdx = 0;
-  let armIdx = 0;
+  let nsIdx = 0;
+  let ewIdx = 0;
 
   for (const [y, layer] of store.layers) {
     const axisLayer = store.axis.get(y);
@@ -65,7 +75,7 @@ export function buildRenderBuffer(
       const [x, z] = unpack(key);
 
       if (blockType === 'fence') {
-        writeMatrix(fencePostMatrices, postIdx * 16, 0.25, 1, 0.25, x, y + 0.5, z);
+        writeMatrix(fencePostMatrices, postIdx * 16, 1, 1, 1, x, y + 0.5, z);
         writeColor(
           fencePostColors,
           postIdx * 3,
@@ -85,25 +95,36 @@ export function buildRenderBuffer(
         for (const direction of directions) {
           if ((mask & (1 << direction.bit)) === 0) continue;
 
-          const sx = direction.dx === 0 ? 0.125 : 0.5;
-          const sz = direction.dz === 0 ? 0.125 : 0.5;
+          const isNS = direction.dx === 0;
           for (const height of armHeights) {
-            writeMatrix(
-              fenceArmMatrices,
-              armIdx * 16,
-              sx,
-              0.25,
-              sz,
-              x + direction.dx * 0.25,
-              y + height,
-              z + direction.dz * 0.25,
-            );
-            writeColor(
-              fenceArmColors,
-              armIdx * 3,
-              getVoxelColor('fence', x, y, z, blockColors.fence, colorRandomness),
-            );
-            armIdx++;
+            const fenceColor = getVoxelColor('fence', x, y, z, blockColors.fence, colorRandomness);
+            if (isNS) {
+              writeMatrix(
+                fenceNSRailMatrices,
+                nsIdx * 16,
+                1,
+                1,
+                1,
+                x,
+                y + height,
+                z + direction.dz * 0.25,
+              );
+              writeColor(fenceNSRailColors, nsIdx * 3, fenceColor);
+              nsIdx++;
+            } else {
+              writeMatrix(
+                fenceEWRailMatrices,
+                ewIdx * 16,
+                1,
+                1,
+                1,
+                x + direction.dx * 0.25,
+                y + height,
+                z,
+              );
+              writeColor(fenceEWRailColors, ewIdx * 3, fenceColor);
+              ewIdx++;
+            }
           }
         }
         continue;
@@ -126,9 +147,12 @@ export function buildRenderBuffer(
     fencePostMatrices,
     fencePostColors,
     fencePostCount,
-    fenceArmMatrices,
-    fenceArmColors,
-    fenceArmCount,
+    fenceNSRailMatrices,
+    fenceNSRailColors,
+    fenceNSRailCount,
+    fenceEWRailMatrices,
+    fenceEWRailColors,
+    fenceEWRailCount,
   };
 }
 
