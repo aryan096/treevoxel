@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, GizmoHelper, GizmoViewport, Sky } from '@react-three/drei';
 import { useFrame, useThree } from '@react-three/fiber';
@@ -24,7 +24,11 @@ type LightingPreset = {
   keyColor: string;
   keyShadowBias: number;
   keyShadowNormalBias: number;
+  fillPosition: [number, number, number];
+  fillIntensity: number;
+  fillColor: string;
   rimIntensity: number;
+  fogDensity?: number;
   toneMappingExposure: number;
   shadows: boolean;
 };
@@ -40,6 +44,9 @@ const LIGHTING_PRESETS: Record<RenderStyleId, LightingPreset> = {
     keyColor: '#fff2d6',
     keyShadowBias: -0.00015,
     keyShadowNormalBias: 0.02,
+    fillPosition: [-18, 18, -12],
+    fillIntensity: 0.16,
+    fillColor: '#cfd7e6',
     rimIntensity: 0.2,
     toneMappingExposure: 1.08,
     shadows: true,
@@ -55,7 +62,11 @@ const LIGHTING_PRESETS: Record<RenderStyleId, LightingPreset> = {
     keyColor: '#ffd39a',
     keyShadowBias: -0.00022,
     keyShadowNormalBias: 0.03,
+    fillPosition: [-18, 18, -12],
+    fillIntensity: 0.22,
+    fillColor: '#b9d9ff',
     rimIntensity: 0.38,
+    fogDensity: 0.0015,
     toneMappingExposure: 1.02,
     shadows: true,
   },
@@ -84,9 +95,33 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
     rimLight: '#8ec2ff',
   };
   const activePalette = renderStyle === 'diorama' ? dioramaPalette : scenePalette;
-  const lightingPreset = LIGHTING_PRESETS[renderStyle];
   const isMinecraft = textureSet === 'minecraft';
   const isDiorama = renderStyle === 'diorama';
+  const lightingPreset = useMemo(() => {
+    const basePreset = LIGHTING_PRESETS[renderStyle];
+    if (!isDiorama || !isMinecraft) {
+      return basePreset;
+    }
+
+    return {
+      ...basePreset,
+      hemisphereSky: '#d8ebff',
+      hemisphereGround: '#8aa06e',
+      hemisphereIntensity: 1.18,
+      ambientIntensity: 0.3,
+      keyPosition: [26, 42, 22] as [number, number, number],
+      keyIntensity: 1.28,
+      keyColor: '#fff1c8',
+      keyShadowBias: -0.00018,
+      keyShadowNormalBias: 0.02,
+      fillPosition: [-24, 24, -18] as [number, number, number],
+      fillIntensity: 0.34,
+      fillColor: '#d6ecff',
+      rimIntensity: 0.2,
+      fogDensity: 0.001,
+      toneMappingExposure: 1.08,
+    };
+  }, [isDiorama, isMinecraft, renderStyle]);
   const dioramaFogColor = isMinecraft ? '#a8d0ff' : '#c2d8f0';
   const dioramaBackground = isMinecraft ? '#a8d0ff' : '#87ceeb';
   const background = isDiorama
@@ -103,12 +138,12 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
       onCreated={({ gl }) => {
         gl.outputColorSpace = THREE.SRGBColorSpace;
         gl.toneMapping = THREE.ACESFilmicToneMapping;
-        gl.toneMappingExposure = lightingPreset.toneMappingExposure;
       }}
       shadows
     >
+      <SceneRenderer toneMappingExposure={lightingPreset.toneMappingExposure} />
       <color attach="background" args={[background]} />
-      {isDiorama && <fogExp2 attach="fog" args={[dioramaFogColor, 0.0015]} />}
+      {isDiorama && <fogExp2 attach="fog" args={[dioramaFogColor, lightingPreset.fogDensity ?? 0.0015]} />}
       <hemisphereLight
         args={[
           lightingPreset.hemisphereSky,
@@ -132,6 +167,11 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
         shadow-camera-right={36}
         shadow-camera-top={36}
         shadow-camera-bottom={-36}
+      />
+      <directionalLight
+        position={lightingPreset.fillPosition}
+        intensity={lightingPreset.fillIntensity}
+        color={lightingPreset.fillColor}
       />
       <directionalLight
         position={[-18, 14, -12]}
@@ -190,6 +230,16 @@ export default function VoxelScene({ showSliceHighlight = true }: VoxelSceneProp
       />
     </Canvas>
   );
+}
+
+function SceneRenderer({ toneMappingExposure }: { toneMappingExposure: number }) {
+  const gl = useThree((s) => s.gl);
+
+  useEffect(() => {
+    gl.toneMappingExposure = toneMappingExposure;
+  }, [gl, toneMappingExposure]);
+
+  return null;
 }
 
 function MinecraftSky() {
