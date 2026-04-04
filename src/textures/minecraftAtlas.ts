@@ -22,14 +22,6 @@ function leafTextures(cellIndex: number): BlockFaceTextures {
   };
 }
 
-function fenceTextures(cellIndex: number): BlockFaceTextures {
-  return {
-    side: cell(cellIndex),
-    top: cell(cellIndex),
-    bottom: cell(cellIndex),
-  };
-}
-
 export const MINECRAFT_ATLAS_SOURCE_FILES: Record<string, number> = {
   oak_log: 0,
   oak_log_top: 1,
@@ -75,9 +67,19 @@ export const MINECRAFT_ATLAS_SOURCE_FILES: Record<string, number> = {
   cherry_leaves: 41,
   azalea_leaves: 42,
   flowering_azalea_leaves: 43,
+  oak_planks: 44,
+  spruce_planks: 45,
+  birch_planks: 46,
+  jungle_planks: 47,
+  acacia_planks: 48,
+  dark_oak_planks: 49,
+  mangrove_planks: 50,
+  cherry_planks: 51,
+  bamboo_fence: 52,
+  bamboo_planks: 53,
 };
 
-export const MINECRAFT_ATLAS_RESERVED_CELLS = [44, 45, 46, 47, 48, 49, 50, 51, 52] as const;
+export const MINECRAFT_ATLAS_RESERVED_CELLS: readonly number[] = [];
 
 export const blockTextures: Record<string, BlockFaceTextures> = {
   oak_log: logTextures(0, 1),
@@ -107,15 +109,15 @@ export const blockTextures: Record<string, BlockFaceTextures> = {
   cherry_leaves: leafTextures(41),
   azalea_leaves: leafTextures(42),
   flowering_azalea_leaves: leafTextures(43),
-  oak_fence: fenceTextures(44),
-  spruce_fence: fenceTextures(45),
-  birch_fence: fenceTextures(46),
-  jungle_fence: fenceTextures(47),
-  acacia_fence: fenceTextures(48),
-  dark_oak_fence: fenceTextures(49),
-  mangrove_fence: fenceTextures(50),
-  cherry_fence: fenceTextures(51),
-  bamboo_fence: fenceTextures(52),
+  oak_planks: { top: 44, bottom: 44, side: 44 },
+  spruce_planks: { top: 45, bottom: 45, side: 45 },
+  birch_planks: { top: 46, bottom: 46, side: 46 },
+  jungle_planks: { top: 47, bottom: 47, side: 47 },
+  acacia_planks: { top: 48, bottom: 48, side: 48 },
+  dark_oak_planks: { top: 49, bottom: 49, side: 49 },
+  mangrove_planks: { top: 50, bottom: 50, side: 50 },
+  cherry_planks: { top: 51, bottom: 51, side: 51 },
+  bamboo_planks: { top: 53, bottom: 53, side: 53 },
 };
 
 export const MINECRAFT_ATLAS_DEFINITION: TextureSetDefinition = {
