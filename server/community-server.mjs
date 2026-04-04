@@ -379,6 +379,12 @@ function getStaticContentType(filePath) {
   }
 }
 
+// Vite content-hashes JS/CSS/woff2 filenames (e.g. chunk-AbC123.js).
+// Only those get immutable caching; fixed-name assets (atlas.png, etc.) do not.
+function isHashedAsset(pathname) {
+  return /\.[0-9a-f]{8,}\.(js|css|woff2?)$/i.test(pathname);
+}
+
 async function tryServeStaticAsset(response, pathname) {
   const normalizedPath = pathname === '/' ? '/index.html' : pathname;
   const requestedPath = path.resolve(distDir, `.${normalizedPath}`);
@@ -398,7 +404,9 @@ async function tryServeStaticAsset(response, pathname) {
       'Content-Type': getStaticContentType(requestedPath),
       'Cache-Control': normalizedPath === '/index.html'
         ? 'no-cache'
-        : 'public, max-age=31536000, immutable',
+        : isHashedAsset(normalizedPath)
+          ? 'public, max-age=31536000, immutable'
+          : 'public, max-age=3600, must-revalidate',
     });
     response.end(fileContents);
     return true;

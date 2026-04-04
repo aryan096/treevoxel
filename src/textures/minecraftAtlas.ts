@@ -135,7 +135,7 @@ export const fenceTextureMap: Record<string, FenceTexture> = {
 export const MINECRAFT_ATLAS_DEFINITION: TextureSetDefinition = {
   id: 'minecraft',
   label: 'Minecraft',
-  atlasUrl: '/textures/minecraft/atlas.png',
+  atlasUrl: '/textures/minecraft/atlas.png?v=2',
   atlasGridSize: GRID_SIZE,
   blockTextures,
   fenceTextures: fenceTextureMap,
