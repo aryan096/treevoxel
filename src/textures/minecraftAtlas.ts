@@ -1,4 +1,4 @@
-import type { BlockFaceTextures, TextureSetDefinition } from './textureSet';
+import type { BlockFaceTextures, FenceTexture, TextureSetDefinition } from './textureSet';
 
 const GRID_SIZE = 8;
 
@@ -120,10 +120,23 @@ export const blockTextures: Record<string, BlockFaceTextures> = {
   bamboo_planks: { top: 53, bottom: 53, side: 53 },
 };
 
+export const fenceTextureMap: Record<string, FenceTexture> = {
+  oak_fence: { texture: 44 },
+  spruce_fence: { texture: 45 },
+  birch_fence: { texture: 46 },
+  jungle_fence: { texture: 47 },
+  acacia_fence: { texture: 48 },
+  dark_oak_fence: { texture: 49 },
+  mangrove_fence: { texture: 50 },
+  cherry_fence: { texture: 51 },
+  bamboo_fence: { texture: 52 },
+};
+
 export const MINECRAFT_ATLAS_DEFINITION: TextureSetDefinition = {
   id: 'minecraft',
   label: 'Minecraft',
   atlasUrl: '/textures/minecraft/atlas.png',
   atlasGridSize: GRID_SIZE,
   blockTextures,
+  fenceTextures: fenceTextureMap,
 };

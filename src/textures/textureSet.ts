@@ -8,12 +8,17 @@ export type BlockFaceTextures = {
   side: number;
 };
 
+export type FenceTexture = {
+  texture: number;
+};
+
 export type TextureSetDefinition = {
   id: TextureSetId;
   label: string;
   atlasUrl: string | null;
   atlasGridSize: number;
   blockTextures: Record<MinecraftBlockId, BlockFaceTextures>;
+  fenceTextures: Record<string, FenceTexture>;
 };
 
 export const FLAT_COLOR_DEFINITION: TextureSetDefinition = {
@@ -22,4 +27,5 @@ export const FLAT_COLOR_DEFINITION: TextureSetDefinition = {
   atlasUrl: null,
   atlasGridSize: 0,
   blockTextures: {},
+  fenceTextures: {},
 };
