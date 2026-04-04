@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { useThree } from '@react-three/fiber';
 import { createTexturedVoxelMaterial } from './texturedVoxelMaterial';
+import { createTexturedFenceMaterial } from './texturedFenceMaterial';
 import { getLeafTintColor } from './leafTint';
 import { useTreeStore } from '../store/treeStore';
 import { loadAtlas } from '../textures/loadAtlas';
@@ -165,6 +166,22 @@ export default function VoxelMesh() {
     MINECRAFT_ATLAS_DEFINITION.blockTextures[minecraftPalette.leaf] ?? DEFAULT_BLOCK_TEXTURES.leaf;
   const leafTintColor = getLeafTintColor(minecraftPalette.leaf);
 
+  const fenceBlockId = minecraftPalette.fence;
+  const fenceCellIndex = MINECRAFT_ATLAS_DEFINITION.fenceTextures[fenceBlockId]?.texture
+    ?? MINECRAFT_ATLAS_DEFINITION.fenceTextures['oak_fence']?.texture
+    ?? 44;
+
+  const texturedFenceMaterial = useMemo(() => {
+    if (textureSet !== 'minecraft' || !atlasTexture) {
+      return null;
+    }
+    return createTexturedFenceMaterial(
+      atlasTexture,
+      MINECRAFT_ATLAS_DEFINITION.atlasGridSize,
+      fenceCellIndex,
+    );
+  }, [atlasTexture, fenceCellIndex, textureSet]);
+
   const texturedLogMaterial = useMemo(() => {
     if (textureSet !== 'minecraft' || !atlasTexture) {
       return null;
@@ -229,6 +246,10 @@ export default function VoxelMesh() {
     texturedLeafMaterial?.dispose();
   }, [texturedLeafMaterial]);
 
+  useEffect(() => () => {
+    texturedFenceMaterial?.dispose();
+  }, [texturedFenceMaterial]);
+
   useEffect(() => {
     setAxisAttribute(logGeometry, cubeData.axes.log);
     setAxisAttribute(branchGeometry, cubeData.axes.branch);
@@ -239,7 +260,7 @@ export default function VoxelMesh() {
   const activeLogMaterial = isMinecraftTextureMode && texturedLogMaterial ? texturedLogMaterial : logMaterial;
   const activeBranchMaterial = isMinecraftTextureMode && texturedBranchMaterial ? texturedBranchMaterial : branchMaterial;
   const activeLeafMaterial = isMinecraftTextureMode && texturedLeafMaterial ? texturedLeafMaterial : leafMaterial;
-  const activeFenceMaterial = fenceMaterial;
+  const activeFenceMaterial = isMinecraftTextureMode && texturedFenceMaterial ? texturedFenceMaterial : fenceMaterial;
   const maxLogInstances = Math.max(1, cubeData.counts.log);
   const maxBranchInstances = Math.max(1, cubeData.counts.branch);
   const maxLeafInstances = Math.max(1, cubeData.counts.leaf);
@@ -347,7 +368,7 @@ export default function VoxelMesh() {
 
   useEffect(() => {
     invalidate();
-  }, [invalidate, textureSet, texturedBranchMaterial, texturedLeafMaterial, texturedLogMaterial]);
+  }, [invalidate, textureSet, texturedBranchMaterial, texturedFenceMaterial, texturedLeafMaterial, texturedLogMaterial]);
 
   return (
     <>
