@@ -308,21 +308,21 @@ export default function VoxelMesh() {
       matrix.fromArray(buffer.fencePostMatrices, i * 16);
       color.fromArray(buffer.fencePostColors, i * 3);
       fencePostMesh.setMatrixAt(i, matrix);
-      fencePostMesh.setColorAt(i, color);
+      fencePostMesh.setColorAt(i, isMinecraftTextureMode ? neutralColor : color);
     }
 
     for (let i = 0; i < buffer.fenceNSRailCount; i++) {
       matrix.fromArray(buffer.fenceNSRailMatrices, i * 16);
       color.fromArray(buffer.fenceNSRailColors, i * 3);
       fenceNSRailMesh.setMatrixAt(i, matrix);
-      fenceNSRailMesh.setColorAt(i, color);
+      fenceNSRailMesh.setColorAt(i, isMinecraftTextureMode ? neutralColor : color);
     }
 
     for (let i = 0; i < buffer.fenceEWRailCount; i++) {
       matrix.fromArray(buffer.fenceEWRailMatrices, i * 16);
       color.fromArray(buffer.fenceEWRailColors, i * 3);
       fenceEWRailMesh.setMatrixAt(i, matrix);
-      fenceEWRailMesh.setColorAt(i, color);
+      fenceEWRailMesh.setColorAt(i, isMinecraftTextureMode ? neutralColor : color);
     }
 
     logMesh.count = logCount;
