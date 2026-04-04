@@ -9,3 +9,4 @@ docs/specs/*
 .superpowers
 scripts/source-textures/
 .codex
+.worktrees/
