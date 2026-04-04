@@ -60,6 +60,7 @@ export default function VoxelMesh() {
   const textureSet = useTreeStore((s) => s.textureSet);
   const minecraftPalette = useTreeStore((s) => s.minecraftPalette);
   const invalidate = useThree((s) => s.invalidate);
+  const glCapabilities = useThree((s) => s.gl.capabilities);
   const isMinecraftTextureMode = textureSet === 'minecraft';
 
   const logGeometry = useMemo(() => new THREE.BoxGeometry(1, 1, 1), []);
@@ -158,6 +159,12 @@ export default function VoxelMesh() {
   }, [buffer]);
 
   const atlasTexture = useMemo(() => loadAtlas(MINECRAFT_ATLAS_DEFINITION.atlasUrl), []);
+  useEffect(() => {
+    if (atlasTexture) {
+      atlasTexture.anisotropy = glCapabilities.getMaxAnisotropy();
+      atlasTexture.needsUpdate = true;
+    }
+  }, [atlasTexture, glCapabilities]);
   const logBlockTextures =
     MINECRAFT_ATLAS_DEFINITION.blockTextures[minecraftPalette.log] ?? DEFAULT_BLOCK_TEXTURES.log;
   const branchBlockTextures =
@@ -217,7 +224,7 @@ export default function VoxelMesh() {
       atlasTexture,
       MINECRAFT_ATLAS_DEFINITION.atlasGridSize,
       leafBlockTextures,
-      { alphaTest: 0.5, doubleSided: true, tintColor: leafTintColor },
+      { alphaToCoverage: true, doubleSided: true, tintColor: leafTintColor },
     );
   }, [atlasTexture, leafBlockTextures, leafTintColor, textureSet]);
 

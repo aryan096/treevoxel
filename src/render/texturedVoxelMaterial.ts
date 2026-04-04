@@ -4,6 +4,7 @@ import type { BlockFaceTextures } from '../textures/textureSet';
 type TexturedVoxelMaterialOptions = {
   voxelSize?: number;
   alphaTest?: number;
+  alphaToCoverage?: boolean;
   doubleSided?: boolean;
   tintColor?: THREE.ColorRepresentation;
   tintLightness?: number;
@@ -19,10 +20,12 @@ export function createTexturedVoxelMaterial(
   const voxelSize = options.voxelSize ?? 1;
   const tintColor = new THREE.Color(options.tintColor ?? 0xffffff);
   const tintLightness = options.tintLightness ?? 0;
+  const usesA2C = options.alphaToCoverage ?? false;
   const material = new THREE.MeshLambertMaterial({
     color: 0xffffff,
-    transparent: (options.alphaTest ?? 0) > 0,
-    alphaTest: options.alphaTest ?? 0,
+    transparent: !usesA2C && (options.alphaTest ?? 0) > 0,
+    alphaTest: usesA2C ? 0 : (options.alphaTest ?? 0),
+    alphaToCoverage: usesA2C,
     side: options.doubleSided ? THREE.DoubleSide : THREE.FrontSide,
   });
   material.toneMapped = options.toneMapped ?? false;

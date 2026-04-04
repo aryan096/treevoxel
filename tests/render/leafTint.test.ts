@@ -22,6 +22,10 @@ describe('getLeafTintColor', () => {
     expect(MINECRAFT_BIOME_TINTS.mangroveSwamp.foliage).toBe('#8DB127');
   });
 
+  it('does not tint flowering azalea leaves so the flower pixels keep their source colors', () => {
+    expect(getLeafTintColor('flowering_azalea_leaves')).toBeUndefined();
+  });
+
   it('leaves untinted blocks alone', () => {
     expect(getLeafTintColor('cherry_leaves')).toBeUndefined();
   });

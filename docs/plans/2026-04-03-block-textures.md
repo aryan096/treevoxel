@@ -6,7 +6,7 @@
 
 **Goal:** Replace flat-colored cubes with Minecraft-style 16x16 pixel textures on block faces, with per-face variation (logs show bark on sides, end grain on top/bottom). Introduce a "texture set" abstraction so users can toggle between flat color (current) and Minecraft textures.
 
-**Scope:** Texture atlas creation, shader modification via `onBeforeCompile`, axis data propagation through RenderBuffer, store/UI toggle. No fence textures, no PBR, no normal maps.
+**Scope:** Texture atlas creation, shader modification via `onBeforeCompile`, axis data propagation through RenderBuffer, store/UI toggle, and general selectable plank blocks for `log` and `branch`. Fence-specific geometry/material work remains in `docs/plans/2026-04-03-fence-texturing.md`. No PBR, no normal maps.
 
 **Tech Stack:** Three.js (MeshStandardMaterial + onBeforeCompile), React Three Fiber, Zustand, Vite (static asset serving)
 
@@ -33,7 +33,7 @@ Minecraft's texture assets are copyrighted by Mojang/Microsoft and cannot be red
 
 1. Go to [https://faithfulpack.net/faithful16x/latest](https://faithfulpack.net/faithful16x/latest) and download the latest Java Edition release (`.zip` file, e.g. `Faithful 16x - Java - 1.21.zip`).
 2. Unzip the file. Textures live at `assets/minecraft/textures/block/` inside the zip.
-3. Copy only the needed block face PNGs from that directory into `scripts/source-textures/`. The required files are listed in the atlas script (see below). You do not need the full pack — just the ~53 face textures.
+3. Copy only the needed block face PNGs from that directory into `scripts/source-textures/`. The required files are listed in the atlas script (see below). You do not need the full pack.
 4. Run `npx tsx scripts/build-atlas.ts` to composite them into `public/textures/minecraft/atlas.png`.
 
 ### Required Source Textures
@@ -58,6 +58,15 @@ Copy these files from `assets/minecraft/textures/block/` in the Faithful zip int
 | `mangrove_log_top.png` | Mangrove log top/bottom |
 | `cherry_log.png` | Cherry log side |
 | `cherry_log_top.png` | Cherry log top/bottom |
+| `oak_planks.png` | Oak planks selectable block, oak fence source |
+| `spruce_planks.png` | Spruce planks selectable block, spruce fence source |
+| `birch_planks.png` | Birch planks selectable block, birch fence source |
+| `jungle_planks.png` | Jungle planks selectable block, jungle fence source |
+| `acacia_planks.png` | Acacia planks selectable block, acacia fence source |
+| `dark_oak_planks.png` | Dark Oak planks selectable block, dark oak fence source |
+| `mangrove_planks.png` | Mangrove planks selectable block, mangrove fence source |
+| `cherry_planks.png` | Cherry planks selectable block, cherry fence source |
+| `bamboo_planks.png` | Bamboo planks selectable block |
 | `oak_leaves.png` | Oak leaves |
 | `birch_leaves.png` | Birch leaves |
 | `spruce_leaves.png` | Spruce leaves |
@@ -68,7 +77,7 @@ Copy these files from `assets/minecraft/textures/block/` in the Faithful zip int
 | `cherry_leaves.png` | Cherry leaves |
 | `azalea_leaves.png` | Azalea leaves |
 | `flowering_azalea_leaves.png` | Flowering Azalea leaves |
-| *(fence textures reserved — not needed yet)* | |
+| `bamboo_fence.png` | Bamboo fence texture used by the fence texturing plan |
 
 ### Storage Layout
 
@@ -99,6 +108,7 @@ public/
 - `scripts/source-textures/` is gitignored because Faithful is CC BY-NC-SA 4.0 — we do not redistribute the raw individual texture files. The atlas builder is in the repo; developers run it locally after downloading the pack.
 - `public/textures/minecraft/atlas.png` is also gitignored for the same reason; it is generated at build time.
 - The placeholder atlas (solid colors in a grid) is sufficient for Tasks 1-6. Real textures are only needed for Task 7 (visual verification).
+- Plank textures are now shared inputs for both general full-cube block selection and fence rendering.
 - Faithful 16x is chosen over 32x/64x because our atlas cell size is 16x16. Using a higher-res pack would require downscaling.
 
 ---
@@ -121,7 +131,8 @@ Establish the type system and atlas cell mappings that all subsequent tasks depe
 
 **Notes:**
 - Cell index layout should match the atlas grid in the spec (logs: 34 cells, leaves: 10, fences: 9 reserved, totaling 53/64).
-- Fences are reserved slots — populate indices but they won't be rendered with textures yet.
+- Include selectable plank block IDs in `blockTextures` as this plan evolves.
+- Fence-specific rendering remains separate because fences need authored geometry and non-cube UV handling.
 
 ---
 

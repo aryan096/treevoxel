@@ -40,7 +40,6 @@ const LEAF_TINT_BY_BLOCK_ID: Partial<Record<MinecraftBlockId, string>> = {
   dark_oak_leaves: MINECRAFT_BIOME_TINTS.darkForest.foliage,
   mangrove_leaves: MINECRAFT_BIOME_TINTS.mangroveSwamp.foliage,
   azalea_leaves: MINECRAFT_BIOME_TINTS.forest.foliage,
-  flowering_azalea_leaves: MINECRAFT_BIOME_TINTS.forest.foliage,
 };
 
 export const DEFAULT_DIORAMA_GRASS_TINT = MINECRAFT_BIOME_TINTS.plains.grass;
