@@ -1,5 +1,51 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeSnapshot, serializeSubmission } from '../../server/community-server.mjs';
+import { handleRequest, normalizeSnapshot, serializeSubmission } from '../../server/community-server.mjs';
+
+async function request(pathname: string, options: { method?: string; headers?: Record<string, string> } = {}, body = '') {
+  let status = 0;
+  let headers: Record<string, string | string[] | undefined> = {};
+  let responseBody = '';
+
+  const request = {
+    url: pathname,
+    method: options.method ?? 'GET',
+    headers: {
+      host: 'localhost',
+      ...options.headers,
+    },
+    async *[Symbol.asyncIterator]() {
+      if (body) {
+        yield Buffer.from(body, 'utf8');
+      }
+    },
+  };
+
+  const response = {
+    writeHead(nextStatus: number, nextHeaders: Record<string, string>) {
+      status = nextStatus;
+      headers = Object.fromEntries(
+        Object.entries(nextHeaders).map(([key, value]) => [key.toLowerCase(), value]),
+      );
+      return this;
+    },
+    end(chunk?: Buffer | string) {
+      if (typeof chunk === 'string') {
+        responseBody = chunk;
+      } else if (chunk) {
+        responseBody = chunk.toString('utf8');
+      }
+      return this;
+    },
+  };
+
+  await handleRequest(request, response);
+
+  return {
+    status,
+    headers,
+    body: responseBody,
+  };
+}
 
 describe('community server snapshot contract', () => {
   it('accepts the current v2 community snapshot shape', () => {
@@ -154,5 +200,38 @@ describe('community server snapshot contract', () => {
 
     expect(submission.snapshot.blockColors.fence).toBe('#66462f');
     expect(submission.snapshot.minecraftPalette.fence).toBe('spruce_fence');
+  });
+});
+
+describe('community server hardening', () => {
+  it('returns 404 for scanner-style extensionless paths instead of the app shell', async () => {
+    const response = await request('/phpinfo');
+
+    expect(response.status).toBe(404);
+    expect(response.headers['content-type']).toBe('application/json; charset=utf-8');
+    expect(response.headers['x-content-type-options']).toBe('nosniff');
+    expect(JSON.parse(response.body)).toEqual({ error: 'Not found.' });
+  });
+
+  it('still serves the app shell from the root path', async () => {
+    const response = await request('/');
+
+    expect(response.status).toBe(200);
+    expect(response.headers['content-type']).toBe('text/html; charset=utf-8');
+    expect(response.headers['x-frame-options']).toBe('DENY');
+    expect(response.body).toContain('<div id="root"></div>');
+  });
+
+  it('rejects oversized JSON request bodies', async () => {
+    const tooLargeName = 'a'.repeat(70_000);
+    const response = await request('/api/community/submissions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }, JSON.stringify({ creationName: tooLargeName }));
+
+    expect(response.status).toBe(400);
+    expect(JSON.parse(response.body)).toEqual({ error: 'Request body must be 64 KB or smaller.' });
   });
 });

@@ -13,6 +13,7 @@ const dataDir = process.env.TREEVOXEL_DATA_DIR
 const dataFile = path.join(dataDir, 'community-creations.json');
 const distDir = path.join(projectRoot, 'dist');
 const port = Number(process.env.PORT ?? 8787);
+const maxJsonBodyBytes = 64 * 1024;
 const adminKeys = new Set(
   (process.env.TREEVOXEL_ADMIN_KEYS ?? process.env.TREEVOXEL_ADMIN_KEY ?? '')
     .split(',')
@@ -184,13 +185,24 @@ const requiredNumericParams = [
   'symmetryAssist',
   'buildabilityBias',
 ];
+
+function withSecurityHeaders(headers = {}) {
+  return {
+    'X-Content-Type-Options': 'nosniff',
+    'X-Frame-Options': 'DENY',
+    'Referrer-Policy': 'strict-origin-when-cross-origin',
+    'Permissions-Policy': 'camera=(), microphone=(), geolocation=()',
+    ...headers,
+  };
+}
+
 function json(response, status, payload) {
-  response.writeHead(status, {
+  response.writeHead(status, withSecurityHeaders({
     'Content-Type': 'application/json; charset=utf-8',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key',
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  });
+  }));
   response.end(JSON.stringify(payload));
 }
 
@@ -326,7 +338,12 @@ async function writeDb(db) {
 
 async function readJsonBody(request) {
   const chunks = [];
+  let totalBytes = 0;
   for await (const chunk of request) {
+    totalBytes += chunk.length;
+    if (totalBytes > maxJsonBodyBytes) {
+      throw new Error('Request body must be 64 KB or smaller.');
+    }
     chunks.push(chunk);
   }
 
@@ -347,6 +364,11 @@ function isAuthorized(request) {
     return false;
   }
   return typeof request.headers['x-admin-key'] === 'string' && adminKeys.has(request.headers['x-admin-key']);
+}
+
+function isPathInsideBase(basePath, targetPath) {
+  const relativePath = path.relative(basePath, targetPath);
+  return relativePath !== '' && !relativePath.startsWith('..') && !path.isAbsolute(relativePath);
 }
 
 function getStaticContentType(filePath) {
@@ -385,11 +407,11 @@ function isHashedAsset(pathname) {
   return /\.[0-9a-f]{8,}\.(js|css|woff2?)$/i.test(pathname);
 }
 
-async function tryServeStaticAsset(response, pathname) {
+async function tryServeStaticAsset(response, pathname, method) {
   const normalizedPath = pathname === '/' ? '/index.html' : pathname;
   const requestedPath = path.resolve(distDir, `.${normalizedPath}`);
 
-  if (!requestedPath.startsWith(distDir)) {
+  if (requestedPath !== distDir && !isPathInsideBase(distDir, requestedPath)) {
     return false;
   }
 
@@ -400,15 +422,15 @@ async function tryServeStaticAsset(response, pathname) {
     }
 
     const fileContents = await readFile(requestedPath);
-    response.writeHead(200, {
+    response.writeHead(200, withSecurityHeaders({
       'Content-Type': getStaticContentType(requestedPath),
       'Cache-Control': normalizedPath === '/index.html'
         ? 'no-cache'
         : isHashedAsset(normalizedPath)
           ? 'public, max-age=31536000, immutable'
           : 'public, max-age=3600, must-revalidate',
-    });
-    response.end(fileContents);
+    }));
+    response.end(method === 'HEAD' ? undefined : fileContents);
     return true;
   } catch {
     return false;
@@ -424,20 +446,20 @@ async function hasFrontendBuild() {
   }
 }
 
-async function serveFrontendApp(response) {
+async function serveFrontendApp(response, method) {
   try {
     const indexHtml = await readFile(path.join(distDir, 'index.html'));
-    response.writeHead(200, {
+    response.writeHead(200, withSecurityHeaders({
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'no-cache',
-    });
-    response.end(indexHtml);
+    }));
+    response.end(method === 'HEAD' ? undefined : indexHtml);
   } catch {
-    response.writeHead(200, {
+    response.writeHead(200, withSecurityHeaders({
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'no-cache',
-    });
-    response.end(`<!doctype html>
+    }));
+    response.end(method === 'HEAD' ? undefined : `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
@@ -466,18 +488,18 @@ function serializeSubmission(submission) {
 
 export { serializeSubmission };
 
-const server = createServer(async (request, response) => {
+export async function handleRequest(request, response) {
   if (!request.url || !request.method) {
     json(response, 400, { error: 'Invalid request.' });
     return;
   }
 
   if (request.method === 'OPTIONS') {
-    response.writeHead(204, {
+    response.writeHead(204, withSecurityHeaders({
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Key',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    });
+    }));
     response.end();
     return;
   }
@@ -570,13 +592,13 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === 'GET' || request.method === 'HEAD') {
-      const servedAsset = await tryServeStaticAsset(response, url.pathname);
+      const servedAsset = await tryServeStaticAsset(response, url.pathname, request.method);
       if (servedAsset) {
         return;
       }
 
-      if (!path.extname(url.pathname)) {
-        await serveFrontendApp(response);
+      if (url.pathname === '/') {
+        await serveFrontendApp(response, request.method);
         return;
       }
     }
@@ -586,7 +608,11 @@ const server = createServer(async (request, response) => {
     const message = error instanceof Error ? error.message : 'Unexpected server error.';
     json(response, 400, { error: message });
   }
-});
+}
+
+const server = createServer(handleRequest);
+
+export { server };
 
 if (process.argv[1] && path.resolve(process.argv[1]) === currentFilePath) {
   server.on('error', (error) => {
